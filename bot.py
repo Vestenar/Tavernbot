@@ -17,7 +17,7 @@ with open('params.txt') as init_file:
     chatbot_token = bot_params["chatbot_token"]
 
 # ------<<<------ Инициализация X-O ------>>>------
-xo_state = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+xo_state = [' '] * 9
 xo_message_to_delete, xo_turn = (None, None)
 
 bot = TeleBot(bot_token)
