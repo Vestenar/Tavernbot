@@ -28,7 +28,7 @@ for ident in warning_to.keys():
     bot.send_message(ident, 'Я перезапущен, таймеры сброшены')
 
 
-# ------<<<------ Логирование сообщений ------>>>------
+# ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
 def logging_messages(message):
     if message.chat.type == 'private' and message.json["from"]["id"] != 297112989:
         with open(r'tavernmessages.log', 'a') as logfile:
