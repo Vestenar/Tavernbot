@@ -1,2 +1,0 @@
-{"bot_token": "1896820052:AAGvRhHTTvslRUtUbCUcTZMMYdkAoZnASZ0", "chatbot_token": "cde4b4bbad1341248e5ec8acceb59d32", "timer22": {"date": 18, "mm": 6, "ss": 1},
-"whocall": {"297112989": "Vestenar"}, "whonotcall": {"473206824": "Den", "868925858": "Gorgona", "288229602": "Djaf"}}
