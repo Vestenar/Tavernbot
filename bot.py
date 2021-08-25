@@ -118,7 +118,7 @@ def callback_buttons(call):
 
         elif call.data == 'closemenu':
             bot.delete_message(call.message.chat.id, call.message.message_id)
-            xo_state = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            xo_state = [' '] * 9
 
         elif call.data in ['пиво', 'вино', 'ламбруско', 'сидр', 'налей']:
             rep_message, rep_type = replies.reply(call.data, chatbot_token)
@@ -158,7 +158,7 @@ def callback_buttons(call):
                                                        'Бодуном! Найдется ли другой смельчак?')
 
         elif call.data == 'X-O':
-            xo_state = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            xo_state = [' '] * 9
             xo_turn = choice(['Barmen', 'Player'])
             if xo_turn == 'Barmen':
                 xo_state[4] = 'O'
