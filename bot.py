@@ -15,6 +15,7 @@ with open('params.txt') as init_file:
     bot_token = bot_params["bot_token"]
     warning_to = bot_params["whocall"]
     chatbot_token = bot_params["chatbot_token"]
+    my_id = int(bot_params["my_id"])
 
 # ------<<<------ Инициализация X-O ------>>>------
 xo_state = [' '] * 9
@@ -30,7 +31,7 @@ for ident in warning_to.keys():
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
 def logging_messages(message):
-    if message.chat.type == 'private' and message.json["from"]["id"] != 297112989:
+    if message.chat.type == 'private' and message.json["from"]["id"] != my_id:
         with open(r'tavernmessages.log', 'a') as logfile:
             logfile.write('{}\t{} {}:\t{}\n'.format(datetime.now(), message.chat.type,
                                                     message.from_user.first_name, message.text))
@@ -174,7 +175,7 @@ def callback_buttons(call):
 
 @bot.message_handler(regexp=r'!log')
 def send_logs(message):
-    if message.json['from']['id'] == 297112989:
+    if message.json['from']['id'] == my_id:
         bot.send_document(message.chat.id, open(r'tavernerrors.log', 'rb'))
         bot.send_document(message.chat.id, open(r'tavernmessages.log', 'rb'))
         bot.send_document(message.chat.id, open(r'unpinerrors.log', 'rb'))
@@ -182,7 +183,7 @@ def send_logs(message):
 
 @bot.message_handler(regexp=r'!deletelog')
 def delete_logs(message):
-    if message.json['from']['id'] == 297112989:
+    if message.json['from']['id'] == my_id:
         with open(r'tavernerrors.log', 'w') as file:
             file.write('cleared by request at {}\n'.format(datetime.now()))
         with open(r'tavernmessages.log', 'w') as file:
@@ -193,7 +194,7 @@ def delete_logs(message):
 
 @bot.message_handler(regexp=r'!reload')
 def reload_modules(message):
-    if message.json['from']['id'] == 297112989:
+    if message.json['from']['id'] == my_id:
         import importlib
         importlib.reload(getinfo)
         importlib.reload(replies)
