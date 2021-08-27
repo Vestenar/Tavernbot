@@ -60,6 +60,16 @@ payment = ["Стоять за стойкой одно удовольствие! 
            "Оплата? Не, не слышал", "Деньги - зло! И мне на все зла не хватает!"]
 
 
+def check_group(message):
+    from re import findall
+    group = findall(r'групп.* ([a-zа-я])', message)
+    dict_translate = str.maketrans('абсдефг', 'abcdefg')
+    if group:
+        group = group[0].translate(dict_translate)
+        return group.upper()
+    else: return None
+
+
 def reply(message, chatbot_token):
     from re import findall
     seller_name, seller_id, message_date = ('', 0, time.time())
@@ -96,6 +106,8 @@ def reply(message, chatbot_token):
         'recepie': r'(научи|дай|поделись|расскажи).*(готовить|рецепт)',
         'football_euro': r'лиг.+ европы',
         'football_champ': r'лиг.+ чемпионов',
+        'football_konference': r'лиг.+ конференц',
+        'football_world': r'(чемпионат мира|ЧМ22)'
     }
     found_phrases = []
 
@@ -142,10 +154,20 @@ def reply(message, chatbot_token):
         return get_currencies(), 'text'
     if 'botname' in found_phrases and 'football_euro' in found_phrases:
         from getinfo import get_football
-        return get_football('euro'), 'text'
+        group = check_group(message)
+        return get_football('euro', group), 'text'
     if 'botname' in found_phrases and 'football_champ' in found_phrases:
         from getinfo import get_football
-        return get_football('champ'), 'text'
+        group = check_group(message)
+        return get_football('champ', group), 'text'
+    if 'botname' in found_phrases and 'football_konference' in found_phrases:
+        from getinfo import get_football
+        group = check_group(message)
+        return get_football('konf', group), 'text'
+    if 'botname' in found_phrases and 'football_world' in found_phrases:
+        from getinfo import get_football
+        group = check_group(message)
+        return get_football('world', group), 'text'
 
     if 'botname' in found_phrases and 'botpay' in found_phrases:
         return choice(payment), 'text'
@@ -212,9 +234,10 @@ def reply(message, chatbot_token):
 
 if __name__ == '__main__':
     import json
-    with open('params.txt') as init_file:
-        bot_params = json.loads(init_file.read())
-        chatbot_token = bot_params["chatbot_token"]
+    # with open('params.txt') as init_file:
+    #     bot_params = json.loads(init_file.read())
+    #     chatbot_token = bot_params["chatbot_token"]
+    chatbot_token = '1245'
 
     while True:
         msg = input()

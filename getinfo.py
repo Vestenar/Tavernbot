@@ -121,16 +121,22 @@ def get_recepie():      # TODO отказаться от bs4 и найти др�
     return first_text, text, recepie_picture
 
 
-def get_football(league):
+def get_football(league, group=None):
+    parts, games, url = [], [], ''
     if league == 'champ':
-        url = 'https://terrikon.com/champions-league'
-        name = 'Чемпионов'
+        url = 'https://terrikon.com/champions-league/'
+        # name = 'Чемпионов'
+        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     elif league == 'euro':
-        url = 'https://terrikon.com/europa-league'
-        name = 'Европы'
-    else:
-        return 'Это что еще за лига?'
-    table = f'Лига {name} 2020/21. '
+        url = 'https://terrikon.com/europa-league/'
+        # name = 'Европы'
+        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
+    elif league == 'konf':
+        url = 'https://terrikon.com/conference-league/'
+        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
+    elif league == 'world':
+        url = 'https://terrikon.com/worldcup-2022/'
+        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     headers = {'User-Agent': 'Mozilla/5.0', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     session = requests.Session()
     resp = session.get(url, headers=headers)
@@ -138,12 +144,27 @@ def get_football(league):
     if resp.status_code != 200:
         return 'Какой такой футбол еще?'
     soup = BeautifulSoup(resp.text, 'lxml')
-    parts = {3: '1/8 финала', 2: '1/4 финала', 1: '1/2 финала', 0: 'Финал'}
-    for part in parts:
-        games = soup.find_all('table', {'class': 'gameresult'})[part]
-        if '-:-' in games.text:
-            table += parts[part] + '\n\n'
-            break
+    name = soup.find('h1').text
+    # table = f'Лига {name} 2020/21. '
+    table = name + ' \n'
+    # parts = {3: '1/8 финала', 2: '1/4 финала', 1: '1/2 финала', 0: 'Финал'}
+
+    if not group:
+        for part in parts:
+            # games = soup.find_all('table', {'class': 'gameresult'})[part]
+            games = soup.select_one(f'h2:-soup-contains("{part}")')
+            if not games:
+                return table + f'игры {parts[0]} еще не начались'
+            games = games.find_next('table')
+            if '-:-' in games.text:
+                table += part + '\n\n'
+                break
+    else:
+        table += f'Группа {group}\n\n'
+        games = soup.select_one(f'h2:-soup-contains("{group}")').find_next('table', {'class': 'gameresult'})
+        if not games:
+            return table + f'Группа {group} в турнире не найдена'
+
     for game in games:
         if game != '\n':
             teams = game.find_all('td', {'class': 'team'})
@@ -180,6 +201,6 @@ def get_promo():
 
 
 if __name__ == '__main__':
-    # print(get_football('champ'))
+    print(get_football('champ', 'A'))
     # print(get_football('euro'))
-    print(get_promo())
+    # print(get_promo())

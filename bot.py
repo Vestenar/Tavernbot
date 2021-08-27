@@ -31,9 +31,9 @@ for ident in warning_to.keys():
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
 def logging_messages(message):
-    if message.chat.type == 'private' and message.json["from"]["id"] != my_id:
+    if message.chat.type == 'private' and message.from_user.id != my_id:
         with open(r'tavernmessages.log', 'a') as logfile:
-            logfile.write('{}\t{} {}:\t{}\n'.format(datetime.now(), message.chat.type,
+            logfile.write('{}\t{} {}:\t{}\n'.format(datetime.now(), message.from_user.id,
                                                     message.from_user.first_name, message.text))
 
 
@@ -70,7 +70,7 @@ def dungeon(message):
 
 
 # ------<<<------ Отобразить менюшку игр ------>>>------
-@bot.message_handler(regexp=r'(поиграем|сыграем)')
+@bot.message_handler(regexp=r'(поиграем|сыграем|играть)')
 def dungeon(message):
     logging_messages(message)
     menu_games.games_menu(bot, message)
@@ -110,7 +110,14 @@ def callback_buttons(call):
 
         elif call.data == 'games':
             bot.send_message(call.message.chat.id, 'Можно сыграть с барменом в короткий квест на выживание или '
-                                                   'в крестики-нолики')
+                                                   'в крестики-нолики (сыграем/поиграем)')
+
+        elif call.data == 'football':
+            bot.send_message(call.message.chat.id, 'Спросите у бота про главные футбольные события года '
+                                                   '(лиги Европы, чемпионов, конференций и чемпионат мира) чтобы '
+                                                   'получить таблицу актуального этапа.'
+                                                   'Если в запросе указать интересующую группу (A, B, C, ...), '
+                                                   'то будет показана только таблица группы')
 
         elif call.data == 'menu_bar':
             from menu_games import bar_menu
@@ -228,9 +235,6 @@ def reply_text(message):
 # def get_sticker(message):
 #     chat_id = (-1001320841683)
 #     print(message.json)
-#     bot.restrict_chat_member(-1001320841683, 868925858,
-#                              until_date=(datetime.now().timestamp() + 300), can_send_messages=False)
-
 
 logging.basicConfig(filename="tavernerrors.log", format='%(asctime)s - %(message)s', level=logging.ERROR)
 try:

@@ -81,19 +81,19 @@ def warn(bot, message, hours, minutes=00, seconds=00, rnd=False):
                     message_pinned = True
                 except apihelper.ApiTelegramException:
                     import sys
-                    with open(r'unpinerrors.log', 'a') as logfile:              # TODO проверить, выяснить тип эксепшна
-                        logfile.write(format(sys.exc_info()[0]))            # telebot.apihelper.ApiTelegramException
+                    with open(r'unpinerrors.log', 'a') as logfile:
+                        logfile.write(format(sys.exc_info()[0]))
             now = utc.localize(datetime.utcnow())  # time correction
             delta = (target_time - now).seconds
             time.sleep(delta - 3)
             countdown()
             if message_pinned:
                 try:
-                    bot.unpin_chat_message(message.chat.id, ready30.message_id)   # FIXME сломалось по неясной причине
-                    bot.unpin_all_chat_messages(message.chat.id)
+                    bot.unpin_chat_message(message.chat.id, ready30.message_id)
+                    bot.unpin_all_chat_messages(message.chat.id)            # FIXME сломалось по неясной причине
                 except apihelper.ApiTelegramException:
                     import sys
-                    with open(r'unpinerrors.log', 'a') as logfile:              # TODO проверить, выяснить тип эксепшна
+                    with open(r'unpinerrors.log', 'a') as logfile:
                         logfile.write(format(sys.exc_info()[0]))
         else:
             bot.send_message(message.chat.id, 'Приготовьтесь, осталось {} секунд'.format(delta))
