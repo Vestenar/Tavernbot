@@ -29,6 +29,12 @@ alko = ['CAACAgEAAxkBAAICgF6oCcIsaCSU6us8r1QZvWXLlXtHAAI2CAACv4yQBGnvTm8BVH2EGQQ
         'CAACAgIAAxkBAAIMJ165jyN-FHkHchGyp7uhlCyWD-QOAAJWAANEDc8XGUGSGSyvU3cZBA',       # собачка с бокалами
         ]
 
+spirt = ['CAACAgIAAxkBAAII42FEpSAO3kmXJ0OqAAFQj1b3l_IqDQACZhAAApO8-EmMjC2KIB7StSAE',    # клизьма
+         'CAACAgIAAxkBAAII8GFEpiLUaoUvIuSCp4YoyW43vXdiAAIKAAP-GKoTLvJgGu1w56UgBA',      # chemistry brandon
+         'CAACAgIAAxkBAAII-2FEp4fSCCwKSSokwcZB9nYoaDneAAJIFAACY4tGDNcMsdNoe2_iIAQ',     # alkoholizm
+         'CAACAgIAAxkBAAII_GFEqO454yrD-4McejRTOQt6143HAAJTAwACDDsAAQpuqbY1uUV7HCAE',    # razveli tut
+         ]
+
 owlstiker = ['CAACAgIAAxkBAAIBDV6mAAG-Pl8AAWnSZDvHgUz81ww5p2IAAkwAA3FwZwQygrCaXSZHYhkE',    # сова ламбруско
              'CAACAgIAAxkBAAIC3V6oK2Wr3EsDl_zcbaUw_fR2Vn05AALtAANr7XwK1YxMfEd8EAUZBA',      # сова с пивом
              'CAACAgIAAxkBAAIDHl6oLiQS0mm8TV3RC6JBi9CQKLZNAALEAQACGELuCNMqsp36EbLVGQQ',     # сова с вином
@@ -90,6 +96,7 @@ def reply(message, chatbot_token):
         'gorgosha': r'\bгорго[шн]',
         'yasnogriv': r'\bясногр',
         'kitty': r'\bм[я]+[укф]+\b',
+        'c2h5oh': r'\bспирт[ау]?\b|c2h5oh',
         'wine': r'\bвин(ц|ишк)?[оау]|\bконья.*к|\bвиск(и|арик)|\bром[ау]?\b|\bвод(к|очк)[аиу]|ламбрус',
         'vsegun': r'вс[её]гун',
         'hello': r'привет|\bхай|\bздрям|здравствуй|(добр(ый|ого|ое)( утр[оа]|( день| дня)| вечер[а]| времени))',
@@ -194,6 +201,8 @@ def reply(message, chatbot_token):
             return choice(alko[:9]), 'sticker'
         else:
             return choice(zakus), 'text'
+    if 'c2h5oh' in found_phrases:
+        return choice(spirt), 'sticker'
     if 'tea_coffee' in found_phrases:
         answer = ['Хотите этого? Может чего покрепче?', 'С сушками, ага, конечно', 'Щяс, набадяжу.']
         return choice(answer), 'text'
