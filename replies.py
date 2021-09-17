@@ -1,6 +1,11 @@
 from random import choice
 import time
+from settings import TAFI_ID
 
+with open('params.txt') as init_file:
+    import json
+    bot_params = json.loads(init_file.read())
+    tafi_id = int(bot_params["tafi_id"])
 
 last_drink = 0
 
@@ -234,7 +239,7 @@ def reply(message, chatbot_token):
         if try_ans:
             return try_ans, 'text'
         else:
-            if seller_id == 295056401:        # на Тафи
+            if seller_id == TAFI_ID:        # на Тафи
                 return choice(botheretafi), 'text'
             else:
                 return choice(bothere), 'text'

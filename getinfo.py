@@ -69,7 +69,7 @@ def get_movie():    # TODO доделать парсинг сайта под aja
                                                                                   data['rate'], position + 1)
 
 
-def get_recepie():      # TODO отказаться от bs4 и найти другой источник, не такой корявый
+def get_recepie():      # TODO найти другой источник, не такой корявый
     page = randint(1, 49)
     url = 'https://www.povarenok.ru/recipes/category/20/~{}/?sort=rating&order=desc'.format(page)
     resp = requests.get(url)
