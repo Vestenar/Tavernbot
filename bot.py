@@ -6,12 +6,14 @@ import getinfo
 import replies
 import menu_games
 import timetojump
+import jump_test
 import settings
 
 # ------<<<------ Инициализация ------>>>------
 bot_token = settings.BOT_TOKEN
 my_id = settings.MY_ID
 warning_to = settings.WHOWARN
+
 
 # ------<<<------ Инициализация X-O ------>>>------
 xo_state = [' '] * 9
@@ -80,10 +82,14 @@ def callback_buttons(call):
 
         if call.data in ['прыг 12', 'прыг 17', 'прыг 22']:
             hh = int(call.data.split()[1])
-            timetojump.start_dungeon(bot, call, regular=True, time_msg=hh)
+            # timetojump.start_dungeon(bot, call, regular=True, time_msg=hh)
+            a = jump_test.CounterJump(bot, call, timer_message=hh)
+            a.run()
 
         elif call.data == 'settime':
-            timetojump.start_dungeon(bot, call, regular=False)
+            # timetojump.start_dungeon(bot, call, regular=False)
+            a = jump_test.CounterJump(bot, call)
+            a.run()
 
         elif call.data == 'story':
             bot.send_message(call.message.chat.id, 'Попросите бармена рассказать/поведать '
@@ -111,9 +117,9 @@ def callback_buttons(call):
         elif call.data == 'football':
             bot.send_message(call.message.chat.id, 'Спросите у бота про главные футбольные события года '
                                                    '(лиги Европы, чемпионов, конференций и чемпионат мира) чтобы '
-                                                   'получить таблицу актуального этапа.'
+                                                   'получить таблицу актуального этапа. '
                                                    'Если в запросе указать интересующую группу (A, B, C, ...), '
-                                                   'то будет показана только таблица группы')
+                                                   'то будет показана только таблица группы.')
 
         elif call.data == 'menu_bar':
             from menu_games import bar_menu
@@ -229,8 +235,9 @@ def reply_text(message):
 
 # @bot.message_handler(content_types=['sticker'])
 # def get_sticker(message):
-#     chat_id = (-1001320841683)
-#     print(message.json)
+#     from pprint import pprint
+#     pprint(message.json)
+
 
 logging.basicConfig(filename="tavernerrors.log", format='%(asctime)s - %(message)s', level=logging.ERROR)
 try:
