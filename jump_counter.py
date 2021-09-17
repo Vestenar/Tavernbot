@@ -60,6 +60,10 @@ class CounterJump:
             n = self.send(self.chat_id, 3 - i)
             self.messages_to_delete.append(n)
             time.sleep(1)
+        utc = pytz.timezone('UTC')
+        now = utc.localize(datetime.utcnow())
+        data = str(now.minute) + ":" + str(now.second)
+        print(data)             # TODO log for delay check
         self.send(self.chat_id, 'Вперёд! Удачно вам сходить!')
         self._clear_trash()
 
@@ -119,6 +123,9 @@ class CounterJump:
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
 
+    def _warn_two_minutes(self):
+        pass            # TODO check delay!
+
     def _countdown(self):
         """
         Отсчет времени: оповещение за 2 минуты, за 30 сек и последние 3 сек.
@@ -127,6 +134,7 @@ class CounterJump:
         if self.timedelta > 120:
             time.sleep(self.timedelta - 120)
             n = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 2 минуты')
+            self._warn_two_minutes()
             self.timedelta = 120
             self.messages_to_delete.append(n)
         if self.timedelta > 30:
