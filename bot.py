@@ -6,7 +6,7 @@ import getinfo
 import replies
 import menu_games
 import timetojump
-import jump_test
+import jump_counter
 import settings
 
 # ------<<<------ Инициализация ------>>>------
@@ -83,12 +83,12 @@ def callback_buttons(call):
         if call.data in ['прыг 12', 'прыг 17', 'прыг 22']:
             hh = int(call.data.split()[1])
             # timetojump.start_dungeon(bot, call, regular=True, time_msg=hh)
-            a = jump_test.CounterJump(bot, call, timer_message=hh)
+            a = jump_counter.CounterJump(bot, call, timer_message=hh)
             a.run()
 
         elif call.data == 'settime':
             # timetojump.start_dungeon(bot, call, regular=False)
-            a = jump_test.CounterJump(bot, call)
+            a = jump_counter.CounterJump(bot, call)
             a.run()
 
         elif call.data == 'story':
