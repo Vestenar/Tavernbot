@@ -1,4 +1,3 @@
-import json
 import logging
 from telebot import TeleBot
 from datetime import datetime
@@ -7,15 +6,12 @@ import getinfo
 import replies
 import menu_games
 import timetojump
-
+import settings
 
 # ------<<<------ Инициализация ------>>>------
-with open('params.txt') as init_file:
-    bot_params = json.loads(init_file.read())
-    bot_token = bot_params["bot_token"]
-    warning_to = bot_params["whocall"]
-    chatbot_token = bot_params["chatbot_token"]
-    my_id = int(bot_params["my_id"])
+bot_token = settings.BOT_TOKEN
+my_id = settings.MY_ID
+warning_to = settings.WHOWARN
 
 # ------<<<------ Инициализация X-O ------>>>------
 xo_state = [' '] * 9
@@ -128,7 +124,7 @@ def callback_buttons(call):
             xo_state = [' '] * 9
 
         elif call.data in ['пиво', 'вино', 'ламбруско', 'сидр', 'налей']:
-            rep_message, rep_type = replies.reply(call.data, chatbot_token)
+            rep_message, rep_type = replies.reply(call.data)
             if rep_type == 'text':
                 bot.send_message(call.message.chat.id, rep_message)
             elif rep_type == 'sticker':
@@ -214,7 +210,7 @@ def reload_modules(message):
 def reply_text(message):
     logging_messages(message)
 
-    rep_message, rep_type = replies.reply(message, chatbot_token)
+    rep_message, rep_type = replies.reply(message)
     if rep_type == 'text':
         bot.send_message(message.chat.id, rep_message, parse_mode='html')
     elif rep_type == 'sticker':

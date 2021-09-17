@@ -1,11 +1,7 @@
 from random import choice
 import time
 from settings import TAFI_ID
-
-with open('params.txt') as init_file:
-    import json
-    bot_params = json.loads(init_file.read())
-    tafi_id = int(bot_params["tafi_id"])
+from settings import CHATBOT_TOKEN as chatbot_token
 
 last_drink = 0
 
@@ -81,7 +77,7 @@ def check_group(message):
     else: return None
 
 
-def reply(message, chatbot_token):
+def reply(message):
     from re import findall
     seller_name, seller_id, message_date = ('', 0, time.time())
     if type(message) != str:
@@ -251,8 +247,7 @@ if __name__ == '__main__':
     # with open('params.txt') as init_file:
     #     bot_params = json.loads(init_file.read())
     #     chatbot_token = bot_params["chatbot_token"]
-    chatbot_token = '1245'
 
     while True:
         msg = input()
-        print(reply(msg, chatbot_token))
+        print(reply(msg))
