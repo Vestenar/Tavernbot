@@ -161,8 +161,9 @@ def get_football(league, group=None):
                 break
     else:
         table += f'Группа {group}\n\n'
-        games = soup.select_one(f'h2:-soup-contains("{group}")').find_next('table', {'class': 'gameresult'})
-        if not games:
+        try:
+            games = soup.select_one(f'h2:-soup-contains("{group}")').find_next('table', {'class': 'gameresult'})
+        except:
             return table + f'Группа {group} в турнире не найдена'
 
     for game in games:

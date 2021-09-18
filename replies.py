@@ -70,7 +70,7 @@ payment = ["Стоять за стойкой одно удовольствие! 
 def check_group(message):
     from re import findall
     group = findall(r'групп.* ([a-zа-я])', message)
-    dict_translate = str.maketrans('абсдефг', 'abcdefg')
+    dict_translate = str.maketrans('абсдефгхи', 'abcdefghi')
     if group:
         group = group[0].translate(dict_translate)
         return group.upper()
