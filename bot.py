@@ -209,6 +209,7 @@ def reload_modules(message):
         importlib.reload(replies)
         importlib.reload(menu_games)
         importlib.reload(timetojump)
+        importlib.reload(jump_counter)
         bot.send_message(message.chat.id, 'Модули перегружены')
 
 

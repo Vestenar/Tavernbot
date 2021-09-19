@@ -21,6 +21,7 @@ class CounterJump:
         self.timedata = [0, 0, 0]  # hh, mm, ss
         self.messages_to_delete = []
         self.counter_name = 'гильдпоход в подземелье'
+        self.timeset = False
 
     def _hide_menu(self):
         self.rdy_menu = types.InlineKeyboardMarkup()
@@ -60,11 +61,11 @@ class CounterJump:
             n = self.send(self.chat_id, 3 - i)
             self.messages_to_delete.append(n)
             time.sleep(1)
-        utc = pytz.timezone('UTC')
-        now = utc.localize(datetime.utcnow())
-        data = str(now.minute) + ":" + str(now.second)
-        print(data)             # TODO log for delay check
         self.send(self.chat_id, 'Вперёд! Удачно вам сходить!')
+        now = datetime.utcnow()
+        final_step_time = f'{now.minute}:{now.second}.{str(now.microsecond)[:3]}'
+        with open('timers.txt', 'a') as file:  # TODO log for delay check
+            print('Таймер: {:02d}:{:02d}:{:02d} сработал в {}'.format(*self.timedata, final_step_time), file=file)
         self._clear_trash()
 
     def _clear_trash(self):
@@ -78,20 +79,14 @@ class CounterJump:
         """
 
         self.timedata[0] = self.timer_hh_message
-        timeset = False
+
         if self.timer_hh_message == 12:
             self.timedata[1], self.timedata[2] = (1, 12)
         elif self.timer_hh_message == 17:
             self.timedata[1], self.timedata[2] = (1, 17)
         elif self.timer_hh_message == 22:
-            self.timedata[1], self.timedata[2], timeset = self._check_22_time()
-        if timeset:
-            self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
-                                    '{}:{:02d}:{:02d}.'.format(*self.timedata))
-        else:
-            invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
-                               "Не перепутайте кнопки. Сбор в"]
-            self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
+            self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
+
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
 
@@ -124,7 +119,9 @@ class CounterJump:
         wait.start()
 
     def _warn_two_minutes(self):
-        pass            # TODO check delay!
+        from settings import MY_ID      # TODO реализовать список
+        for chat in [MY_ID]:
+            self.send(chat, 'Готовность 2 минуты')
 
     def _countdown(self):
         """
@@ -134,7 +131,8 @@ class CounterJump:
         if self.timedelta > 120:
             time.sleep(self.timedelta - 120)
             n = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 2 минуты')
-            self._warn_two_minutes()
+            warn_personal = Thread(target=self._warn_two_minutes)
+            warn_personal.start()
             self.timedelta = 120
             self.messages_to_delete.append(n)
         if self.timedelta > 30:
@@ -179,6 +177,13 @@ class CounterJump:
             self.send(self.chat_id, 'Предлагаю завтрашний поход объявить завтра!')
             return
         else:
+            if self.timeset:
+                self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
+                                        '{}:{:02d}:{:02d}.'.format(*self.timedata))
+            elif self.counter_name == 'гильдпоход в подземелье':
+                invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
+                                   "Не перепутайте кнопки. Сбор в"]
+                self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
             self.timedelta = time_delta.seconds
             self._countdown()
 
