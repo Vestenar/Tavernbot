@@ -20,7 +20,7 @@ class CounterJump:
         self.timedelta = 0
         self.timedata = [0, 0, 0]  # hh, mm, ss
         self.messages_to_delete = []
-        self.counter_name = 'гильдпоход в подземелье'
+        self.counter_name = 'гильдпохода в подземелье'
         self.timeset = False
 
     def _hide_menu(self):
@@ -84,6 +84,9 @@ class CounterJump:
             self.timedata[1], self.timedata[2] = (1, 12)
         elif self.timer_hh_message == 17:
             self.timedata[1], self.timedata[2] = (1, 17)
+        elif self.timer_hh_message == 21:
+            self.timedata[1], self.timedata[2] = (11, 21)
+            self.counter_name = 'гильдпохода в море'
         elif self.timer_hh_message == 22:
             self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
 
@@ -180,7 +183,7 @@ class CounterJump:
             if self.timeset:
                 self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
                                         '{}:{:02d}:{:02d}.'.format(*self.timedata))
-            elif self.counter_name == 'гильдпоход в подземелье':
+            elif self.counter_name.startswith('гильдпохода'):
                 invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
                                    "Не перепутайте кнопки. Сбор в"]
                 self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
@@ -211,3 +214,9 @@ class CounterJump:
             self.bot.edit_message_text('Жду ответа от пользователя', self.chat_id,
                                        self.message_id, reply_markup=self.blocking_menu)
             self.bot.register_for_reply(sent, callback=self._resolve_user_time)
+
+    def run_fast(self, ss):
+        self._hide_menu()
+        self.timedelta = ss
+        self.counter_name = 'экстренного похода '
+        self._countdown()

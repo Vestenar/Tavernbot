@@ -2,7 +2,7 @@ from datetime import datetime
 from telebot import types
 from time import sleep
 from random import choice
-
+from settings import DEN_ID, MY_ID, GORGONA_ID, ZST_ID
 delay = 1.5
 
 
@@ -28,20 +28,23 @@ def skills_menu(bot, message):
 
 
 def jump_menu(bot, message):
-    whocan = {868925858: 'gorgona', 473206824: 'den', 297112989: 'vest', -1001320841683: "ZST"}
+    whocan = {GORGONA_ID: 'gorgona', DEN_ID: 'den', MY_ID: 'vest', ZST_ID: "ZST"}
     keyboard = types.InlineKeyboardMarkup()
     callback_button_12 = types.InlineKeyboardButton(text='12:01:12', callback_data='прыг 12')
     callback_button_17 = types.InlineKeyboardButton(text='17:01:17', callback_data='прыг 17')
+    callback_button_21 = types.InlineKeyboardButton(text='21:11:21 море', callback_data='прыг 21')
     callback_button_22 = types.InlineKeyboardButton(text='Случайное время в 22', callback_data='прыг 22')
     callback_button_xx = types.InlineKeyboardButton(text='Задайте время сами', callback_data='settime')
-    callback_button_60 = types.InlineKeyboardButton(text='60 секунд', callback_data='60secs')
-    callback_button_10 = types.InlineKeyboardButton(text='10 секунд', callback_data='10secs')
+    callback_button_60 = types.InlineKeyboardButton(text='60 секунд', callback_data='60sec')
+    callback_button_10 = types.InlineKeyboardButton(text='10 секунд', callback_data='10sec')
     keyboard.row(callback_button_12, callback_button_17)        # меню для таверны (whocan)
     keyboard.row(callback_button_22)
+    keyboard.row(callback_button_21)
+    keyboard.row(callback_button_10, callback_button_60)
     keyboard.row(callback_button_xx)
     keyboard_rnd = types.InlineKeyboardMarkup()                 # меню для остальных
-    # keyboard_rnd.row(callback_button_10)
-    # keyboard_rnd.row(callback_button_60)
+    keyboard_rnd.row(callback_button_10)
+    keyboard_rnd.row(callback_button_60)
     keyboard_rnd.row(callback_button_xx)
     if message.chat.id in whocan:
         bot.send_message(message.chat.id, 'Когда планируем поход?', reply_markup=keyboard)

@@ -80,11 +80,16 @@ def callback_buttons(call):
     global xo_message_to_delete, xo_turn, xo_state
     if call.message:
 
-        if call.data in ['прыг 12', 'прыг 17', 'прыг 22']:
+        if call.data in ['прыг 12', 'прыг 17', 'прыг 21', 'прыг 22']:
             hh = int(call.data.split()[1])
             # timetojump.start_dungeon(bot, call, regular=True, time_msg=hh)
             a = jump_counter.CounterJump(bot, call, timer_message=hh)
             a.run()
+
+        elif call.data in ['10sec', '60sec']:
+            ss = int(call.data[:2])
+            a = jump_counter.CounterJump(bot, call)
+            a.run_fast(ss)
 
         elif call.data == 'settime':
             # timetojump.start_dungeon(bot, call, regular=False)
