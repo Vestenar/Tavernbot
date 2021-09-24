@@ -152,7 +152,7 @@ class CounterJump:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
                         logfile.write(format(sys.exc_info()[0]))
-            # self._get_delta(*self.timedata)       # TODO refresh delta - ПРИЧИНА ДВОЙНОГО СЧЕТА
+            self._get_delta(*self.timedata, refresh=True)
             time.sleep(self.timedelta - 3)
             self._final_countdown()
             if message_pinned:
@@ -167,7 +167,7 @@ class CounterJump:
             time.sleep(self.timedelta - 3)
             self._final_countdown()
 
-    def _get_delta(self, hh, mm, ss):
+    def _get_delta(self, hh, mm, ss, refresh=False):
         """
         Определяет разницу времени относительно времени UTC
         Требует данных ЧЧ вo времени UTC
@@ -176,19 +176,23 @@ class CounterJump:
         now = utc.localize(datetime.utcnow())
         target_time = datetime(now.year, now.month, now.day, ((hh + 21) % 24), mm, ss, tzinfo=utc)
         time_delta = (target_time - now)
+        self.timedelta = time_delta.seconds
+
+        if refresh:
+            return
         if time_delta.days < 0:
             self.send(self.chat_id, 'Предлагаю завтрашний поход объявить завтра!')
             return
-        else:
-            if self.timeset:
-                self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
-                                        '{}:{:02d}:{:02d}.'.format(*self.timedata))
-            elif self.counter_name.startswith('гильдпохода'):
-                invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
-                                   "Не перепутайте кнопки. Сбор в"]
-                self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
-            self.timedelta = time_delta.seconds
-            self._countdown()
+
+        if self.timeset:
+            self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
+                                    '{}:{:02d}:{:02d}.'.format(*self.timedata))
+        elif self.counter_name.startswith('гильдпохода'):
+            invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
+                               "Не перепутайте кнопки. Сбор в"]
+            self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
+
+        self._countdown()
 
     def run(self):
         """
