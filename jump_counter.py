@@ -127,8 +127,12 @@ class CounterJump:
             bot_params = json.loads(file.read())
             warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
         for chat in warnlist:
-            self.send(int(chat), f'Готовность {end[time]}')
-            # TODO через try, если лс закрыта выкидывать из списков? или добавлять в файлик
+            try:
+                self.send(int(chat), f'Готовность {end[time]}')
+            except apihelper.ApiTelegramException:
+                from settings import MY_ID
+                self.send(MY_ID, f'{chat} не открыл личные сообщения')
+            # TODO если лс закрыта выкидывать из списков? или добавлять в файлик
 
     def _countdown(self):
         """

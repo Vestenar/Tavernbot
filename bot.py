@@ -67,7 +67,7 @@ def dungeon(message):
     menu_games.jump_menu(bot, message)
 
 
-@bot.message_handler(commands=['set_reminder'])
+@bot.message_handler(commands=['set_reminder'])     # TODO make buttons
 def set_reminder(message):
     from jump_counter import WarnUpdater
     warn_time = message.text.split()[1]
@@ -78,13 +78,11 @@ def set_reminder(message):
         bot.send_message(message.chat.id, 'Некоррекно выбрано время. Попробуйте 1, 2, 3, 5')
 
 
-@bot.message_handler(commands=['delete_reminder'])
+@bot.message_handler(commands=['delete_reminder'])     # TODO make buttons
 def del_reminder(message):
     from jump_counter import WarnUpdater
     updater = WarnUpdater(bot, message)
     updater.remove_reminder()
-
-
 
 
 # ------<<<------ Отобразить менюшку игр ------>>>------
