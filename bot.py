@@ -67,6 +67,26 @@ def dungeon(message):
     menu_games.jump_menu(bot, message)
 
 
+@bot.message_handler(commands=['set_reminder'])
+def set_reminder(message):
+    from jump_counter import WarnUpdater
+    warn_time = message.text.split()[1]
+    if warn_time in ['1', '2', '3', '5']:
+        updater = WarnUpdater(bot, message, warn_time)
+        updater.set_reminder()
+    else:
+        bot.send_message(message.chat.id, 'Некоррекно выбрано время. Попробуйте 1, 2, 3, 5')
+
+
+@bot.message_handler(commands=['delete_reminder'])
+def del_reminder(message):
+    from jump_counter import WarnUpdater
+    updater = WarnUpdater(bot, message)
+    updater.remove_reminder()
+
+
+
+
 # ------<<<------ Отобразить менюшку игр ------>>>------
 @bot.message_handler(regexp=r'(поиграем|сыграем|играть)')
 def dungeon(message):
@@ -103,21 +123,21 @@ def callback_buttons(call):
             bot.send_message(call.message.chat.id, 'Узнайте у бармена про ситуации на биржах/о курсах валют/'
                                                    'что почем/куда вкладывать')
         elif call.data == 'GV_player':
-            bot.send_message(call.message.chat.id, 'Можно попросить рассказать/шепнуть/узнать какие слухи '
+            bot.send_message(call.message.chat.id, 'Если попросить рассказать/шепнуть/узнать какие слухи '
                                                    'или спросить, что знает/слышал бот, о любом игроке из Годвилля')
         elif call.data == 'timer':
             bot.send_message(call.message.chat.id, 'Можно попросить установить таймер/время/напоминание '
-                                                   'или поросить бармена напомнить про данж/море/полигон/поход')
+                                                   'или напомнить про данж/море/полигон/поход. ')
         elif call.data == 'movie':
-            bot.send_message(call.message.chat.id, 'Можно спросить, что посмотреть, и бармен попробует '
+            bot.send_message(call.message.chat.id, 'Спросите что посмотреть, и бармен попробует '
                                                    'посоветовать фильм')
         elif call.data == 'recipe':
             bot.send_message(call.message.chat.id, 'Можно спросить бармена научить готовить коктейль/ '
                                                    'дать рецепт напитка')
 
         elif call.data == 'games':
-            bot.send_message(call.message.chat.id, 'Можно сыграть с барменом в короткий квест на выживание или '
-                                                   'в крестики-нолики (сыграем/поиграем)')
+            bot.send_message(call.message.chat.id, 'Сыграйте с барменом в короткий квест на выживание или '
+                                                   'в крестики-нолики (команда сыграем/поиграем)')
 
         elif call.data == 'football':
             bot.send_message(call.message.chat.id, 'Спросите у бота про главные футбольные события года '

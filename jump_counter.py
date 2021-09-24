@@ -64,7 +64,7 @@ class CounterJump:
         self.send(self.chat_id, 'Вперёд! Удачно вам сходить!')
         now = datetime.utcnow()
         final_step_time = f'{now.minute}:{now.second}.{str(now.microsecond)[:3]}'
-        with open('timers.txt', 'a') as file:  # TODO log for delay check
+        with open('timers.txt', 'a') as file:
             print('Таймер: {:02d}:{:02d}:{:02d} сработал в {}'.format(*self.timedata, final_step_time), file=file)
         self._clear_trash()
 
@@ -121,23 +121,42 @@ class CounterJump:
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
 
-    def _warn_two_minutes(self):
-        from settings import MY_ID      # TODO реализовать список
-        for chat in [MY_ID]:
-            self.send(chat, 'Готовность 2 минуты')
+    def _warn_personal(self, time):
+        end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "1 минута"}
+        with open('params.txt') as file:
+            bot_params = json.loads(file.read())
+            warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
+        for chat in warnlist:
+            self.send(int(chat), f'Готовность {end[time]}')
+            # TODO через try, если лс закрыта выкидывать из списков? или добавлять в файлик
 
     def _countdown(self):
         """
         Отсчет времени: оповещение за 2 минуты, за 30 сек и последние 3 сек.
         Вероятно, тут же будет реализовано оповещение по требованию в лички
         """
+        if self.timedelta > 300:
+            time.sleep(self.timedelta - 300)
+            warn_personal = Thread(target=self._warn_personal, args=(5,))
+            warn_personal.start()
+            self.timedelta = 300
+        if self.timedelta > 180:
+            time.sleep(self.timedelta - 180)
+            warn_personal = Thread(target=self._warn_personal, args=(3,))
+            warn_personal.start()
+            self.timedelta = 180
         if self.timedelta > 120:
             time.sleep(self.timedelta - 120)
             n = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 2 минуты')
-            warn_personal = Thread(target=self._warn_two_minutes)
+            warn_personal = Thread(target=self._warn_personal, args=(2,))
             warn_personal.start()
             self.timedelta = 120
             self.messages_to_delete.append(n)
+        if self.timedelta > 60:
+            time.sleep(self.timedelta - 60)
+            warn_personal = Thread(target=self._warn_personal, args=(1,))
+            warn_personal.start()
+            self.timedelta = 60
         if self.timedelta > 30:
             time.sleep(self.timedelta - 30)
             self.timedelta = 30
@@ -190,8 +209,14 @@ class CounterJump:
         elif self.counter_name.startswith('гильдпохода'):
             invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
                                "Не перепутайте кнопки. Сбор в"]
-            self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
-
+            timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
+            if self.call.message.json['chat']['type'] in ['group', 'supergroup']:
+                try:
+                    self.bot.pin_chat_message(self.chat_id, timer_done.message_id)
+                except apihelper.ApiTelegramException:
+                    import sys
+                    with open(r'unpinerrors.log', 'a') as logfile:
+                        logfile.write(format(sys.exc_info()[0]))
         self._countdown()
 
     def run(self):
@@ -224,3 +249,38 @@ class CounterJump:
         self.timedelta = ss
         self.counter_name = 'экстренного похода '
         self._countdown()
+
+
+class WarnUpdater:
+    def __init__(self, bot, message, warn_time=None):
+        self.time = warn_time
+        self.bot = bot
+        self.send = bot.send_message
+        self.message = message
+        self.user_id = str(message.from_user.id)
+        self.chat_id = str(message.chat.id)
+
+    def set_reminder(self):
+        # TODO перед добавлением в список, проверить, открыта ли личка у игрока
+        with open('params.txt', 'r') as file:
+            bot_params = json.loads(file.read())
+            warn_list = bot_params["personalwarning"]
+            group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
+            group_list[self.time].append(str(self.user_id))
+        with open('params.txt', 'w') as file:
+            file.write(json.dumps(bot_params))
+
+    def remove_reminder(self):
+        with open('params.txt', 'r') as file:
+            bot_params = json.loads(file.read())
+            warn_list = bot_params["personalwarning"]
+            print(warn_list)
+            group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
+            print(warn_list)
+            print(group_list)
+            for key in group_list:
+                if self.user_id in group_list[key]:
+                    group_list[key].remove(self.user_id)
+            print(warn_list)
+        with open('params.txt', 'w') as file:
+            file.write(json.dumps(bot_params))
