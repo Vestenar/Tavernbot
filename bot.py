@@ -67,22 +67,12 @@ def dungeon(message):
     menu_games.jump_menu(bot, message)
 
 
-@bot.message_handler(commands=['set_reminder'])     # TODO make buttons
-def set_reminder(message):
-    from jump_counter import WarnUpdater
-    warn_time = message.text.split()[1]
-    if warn_time in ['1', '2', '3', '5']:
-        updater = WarnUpdater(bot, message, warn_time)
-        updater.set_reminder()
-    else:
-        bot.send_message(message.chat.id, 'Некоррекно выбрано время. Попробуйте 1, 2, 3, 5')
-
-
-@bot.message_handler(commands=['delete_reminder'])     # TODO make buttons
+@bot.message_handler(commands=['reminder'])
 def del_reminder(message):
-    from jump_counter import WarnUpdater
-    updater = WarnUpdater(bot, message)
-    updater.remove_reminder()
+    if message.chat.type in ['group', 'supergroup']:
+        menu_games.reminder_menu(bot, message)
+    else:
+        bot.send_message(message.chat.id, 'Установка персонального напоминания возможна только в групповом чате')
 
 
 # ------<<<------ Отобразить менюшку игр ------>>>------
@@ -113,6 +103,15 @@ def callback_buttons(call):
             # timetojump.start_dungeon(bot, call, regular=False)
             a = jump_counter.CounterJump(bot, call)
             a.run()
+
+        elif call.data in ['reminder1', 'reminder2', 'reminder3', 'reminder5']:
+            warn_time = call.data[-1]
+            updater = jump_counter.WarnUpdater(bot, call, warn_time)
+            updater.set_reminder()
+
+        elif call.data == 'reminderoff':
+            updater = jump_counter.WarnUpdater(bot, call.message)
+            updater.remove_reminder()
 
         elif call.data == 'story':
             bot.send_message(call.message.chat.id, 'Попросите бармена рассказать/поведать '

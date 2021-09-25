@@ -167,7 +167,7 @@ class CounterJump:
             ready30 = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 30 секунд')
             self.messages_to_delete.append(ready30)
             message_pinned = False
-            if self.call.message.json['chat']['type'] in ['group', 'supergroup']:
+            if self.call.message.chat.type in ['group', 'supergroup']:
                 try:
                     self.bot.pin_chat_message(self.chat_id, ready30.message_id)
                     message_pinned = True
@@ -214,7 +214,7 @@ class CounterJump:
             invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
                                "Не перепутайте кнопки. Сбор в"]
             timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
-            if self.call.message.json['chat']['type'] in ['group', 'supergroup']:
+            if self.call.message.chat.type in ['group', 'supergroup']:
                 try:
                     self.bot.pin_chat_message(self.chat_id, timer_done.message_id)
                 except apihelper.ApiTelegramException:
@@ -256,35 +256,51 @@ class CounterJump:
 
 
 class WarnUpdater:
-    def __init__(self, bot, message, warn_time=None):
+    def __init__(self, bot, call, warn_time=None):
         self.time = warn_time
         self.bot = bot
         self.send = bot.send_message
-        self.message = message
-        self.user_id = str(message.from_user.id)
-        self.chat_id = str(message.chat.id)
+        self.message = call.message
+        self.user_id = str(call.from_user.id)
+        self.username = call.from_user.username
+        self.chat_id = str(call.message.chat.id)
+        self.MAXLEN = 15
+        self.bot_params = None
+
+    def get_group(self):
+        with open('params.txt', 'r') as file:
+            self.bot_params = json.loads(file.read())
+            warn_list = self.bot_params["personalwarning"]
+            group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
+            return group_list
+
+    def save_params(self):
+        with open('params.txt', 'w') as file:
+            file.write(json.dumps(self.bot_params))
 
     def set_reminder(self):
-        # TODO перед добавлением в список, проверить, открыта ли личка у игрока
-        with open('params.txt', 'r') as file:
-            bot_params = json.loads(file.read())
-            warn_list = bot_params["personalwarning"]
-            group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
-            group_list[self.time].append(str(self.user_id))
-        with open('params.txt', 'w') as file:
-            file.write(json.dumps(bot_params))
+        # TODO перед добавлением в список, сохранять резервную копию файла
+        # TODO проверять длину списка, не превышает ли 15 (20?)
+        group_list = self.get_group()
+        for key in group_list:
+            if self.user_id in group_list[key]:
+                group_list[key].remove(self.user_id)
+        group_list[self.time].append(str(self.user_id))
+        self.save_params()
+        self.send(self.chat_id, f'Оповещение для {self.username} успешно установлено на {self.time} мин')
+        self.hide_menu()
 
     def remove_reminder(self):
-        with open('params.txt', 'r') as file:
-            bot_params = json.loads(file.read())
-            warn_list = bot_params["personalwarning"]
-            print(warn_list)
-            group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
-            print(warn_list)
-            print(group_list)
-            for key in group_list:
-                if self.user_id in group_list[key]:
-                    group_list[key].remove(self.user_id)
-            print(warn_list)
-        with open('params.txt', 'w') as file:
-            file.write(json.dumps(bot_params))
+        group_list = self.get_group()
+        for key in group_list:
+            if self.user_id in group_list[key]:
+                group_list[key].remove(self.user_id)
+        self.save_params()
+        self.send(self.chat_id, 'Оповещение отключено')
+        self.hide_menu()
+
+    def hide_menu(self):
+        rdy_menu = types.InlineKeyboardMarkup()
+        ready = types.InlineKeyboardButton(text='Готово', callback_data='done')
+        rdy_menu.row(ready)
+        self.bot.edit_message_text('Напоминание установлено', self.chat_id, self.message.id, reply_markup=rdy_menu)

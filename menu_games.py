@@ -62,6 +62,21 @@ def games_menu(bot, message):
     bot.send_message(message.chat.id, 'Во что поиграем?', reply_markup=game_menu)
 
 
+def reminder_menu(bot, message):
+    remind_menu = types.InlineKeyboardMarkup()
+    menu_button_1 = types.InlineKeyboardButton(text='за 1 минуту', callback_data='reminder1')
+    menu_button_2 = types.InlineKeyboardButton(text='за 2 минуты', callback_data='reminder2')
+    menu_button_3 = types.InlineKeyboardButton(text='за 3 минуты', callback_data='reminder3')
+    menu_button_5 = types.InlineKeyboardButton(text='за 5 минут', callback_data='reminder5')
+    menu_button_none = types.InlineKeyboardButton(text='отключить', callback_data='reminderoff')
+    menu_close = types.InlineKeyboardButton(text='Закрыть меню', callback_data='closemenu')
+    remind_menu.row(menu_button_1, menu_button_2)
+    remind_menu.row(menu_button_3, menu_button_5)
+    remind_menu.row(menu_button_none)
+    remind_menu.row(menu_close)
+    bot.send_message(message.chat.id, 'Напомнить о походе ', reply_markup=remind_menu)
+
+
 def bar_menu(bot, call):
     bar = types.InlineKeyboardMarkup()
     drink_1 = types.InlineKeyboardButton(text='Пиво', callback_data='пиво')
