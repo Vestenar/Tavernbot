@@ -8,7 +8,7 @@ import pytz
 
 
 def checktime22():
-    with open('params.txt') as file:
+    with open('params.json') as file:
         bot_params = json.loads(file.read())
         read_time = bot_params['timer22']
     now = time.localtime()
@@ -22,7 +22,7 @@ def checktime22():
         timewasset = False
         bot_params['timer22'] = {'date': now.tm_mday, 'mm': mm, 'ss': ss}
 
-        with open('params.txt', 'w') as file:
+        with open('params.json', 'w') as file:
             file.write(json.dumps(bot_params))
 
     return mm, ss, timewasset

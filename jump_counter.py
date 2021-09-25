@@ -37,7 +37,7 @@ class CounterJump:
         """
         Проверяет, было ли уже выбрано время в 22ч на случай перезапуска бота
         """
-        with open('params.txt') as file:
+        with open('params.json') as file:
             bot_params = json.loads(file.read())
             read_time = bot_params['timer22']
         now = time.localtime()
@@ -51,7 +51,7 @@ class CounterJump:
             timewasset = False
         bot_params['timer22'] = {'date': now.tm_mday, 'mm': mm, 'ss': ss}
 
-        with open('params.txt', 'w') as file:
+        with open('params.json', 'w') as file:
             file.write(json.dumps(bot_params))
 
         return mm, ss, timewasset
@@ -123,7 +123,7 @@ class CounterJump:
 
     def _warn_personal(self, time):
         end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "1 минута"}
-        with open('params.txt') as file:
+        with open('params.json') as file:
             bot_params = json.loads(file.read())
             warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
         for chat in warnlist:
@@ -268,14 +268,14 @@ class WarnUpdater:
         self.bot_params = None
 
     def get_group(self):
-        with open('params.txt', 'r') as file:
+        with open('params.json', 'r') as file:
             self.bot_params = json.loads(file.read())
             warn_list = self.bot_params["personalwarning"]
             group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
             return group_list
 
     def save_params(self):
-        with open('params.txt', 'w') as file:
+        with open('params.json', 'w') as file:
             file.write(json.dumps(self.bot_params))
 
     def set_reminder(self):
@@ -287,7 +287,7 @@ class WarnUpdater:
                 group_list[key].remove(self.user_id)
         group_list[self.time].append(str(self.user_id))
         self.save_params()
-        self.send(self.chat_id, f'Оповещение для {self.username} успешно установлено на {self.time} мин')
+        self.send(self.chat_id, f'Оповещение для {self.username} успешно установлено на {self.time} мин.')
         self.hide_menu()
 
     def remove_reminder(self):

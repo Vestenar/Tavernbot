@@ -1,5 +1,5 @@
 import logging
-from telebot import TeleBot
+from telebot import TeleBot, apihelper
 from datetime import datetime
 from random import choice
 import getinfo
@@ -24,7 +24,10 @@ bot = TeleBot(bot_token)
 
 # ------<<<------ Оповещения о перезапуске ------>>>------
 for ident in warning_to.keys():
-    bot.send_message(ident, 'Я перезапущен, таймеры сброшены')
+    try:
+        bot.send_message(ident, 'Я перезапущен, таймеры сброшены')
+    except apihelper.ApiTelegramException:
+        bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
 
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
@@ -67,6 +70,7 @@ def dungeon(message):
     menu_games.jump_menu(bot, message)
 
 
+# ------<<<------ Отобразить менюшку напоминаний ------>>>------
 @bot.message_handler(commands=['reminder'])
 def del_reminder(message):
     if message.chat.type in ['group', 'supergroup']:
@@ -210,6 +214,8 @@ def send_logs(message):
         bot.send_document(message.chat.id, open(r'tavernerrors.log', 'rb'))
         bot.send_document(message.chat.id, open(r'tavernmessages.log', 'rb'))
         bot.send_document(message.chat.id, open(r'unpinerrors.log', 'rb'))
+        bot.send_document(message.chat.id, open(r'params.json', 'rb'))
+        bot.send_document(message.chat.id, open(r'timers.txt', 'rb'))
 
 
 @bot.message_handler(regexp=r'!deletelog')

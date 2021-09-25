@@ -19,7 +19,7 @@ if __name__ == '__main__':
     import json
     while True:
         msg = input()
-        with open('params.txt') as init_file:
+        with open('params.json') as init_file:
             bot_params = json.loads(init_file.read())
             chatbot_token = bot_params["chatbot_token"]
         dialog_flow(msg, chatbot_token)
