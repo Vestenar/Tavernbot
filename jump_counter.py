@@ -268,8 +268,9 @@ class WarnUpdater:
         self.bot_params = None
 
     def get_group(self):
-        with open('params.json', 'r') as file:
+        with open('params.json', 'r') as file, open('params.json.bck', 'a') as bckfile:
             self.bot_params = json.loads(file.read())
+            print(self.bot_params, file=bckfile)
             warn_list = self.bot_params["personalwarning"]
             group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
             return group_list
@@ -279,7 +280,6 @@ class WarnUpdater:
             file.write(json.dumps(self.bot_params))
 
     def set_reminder(self):
-        # TODO перед добавлением в список, сохранять резервную копию файла
         # TODO проверять длину списка, не превышает ли 15 (20?)
         group_list = self.get_group()
         for key in group_list:

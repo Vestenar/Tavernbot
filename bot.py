@@ -114,7 +114,7 @@ def callback_buttons(call):
             updater.set_reminder()
 
         elif call.data == 'reminderoff':
-            updater = jump_counter.WarnUpdater(bot, call.message)
+            updater = jump_counter.WarnUpdater(bot, call)
             updater.remove_reminder()
 
         elif call.data == 'story':
