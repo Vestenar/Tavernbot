@@ -6,6 +6,10 @@ from telebot import types, apihelper
 from threading import Thread
 import pytz
 
+"""
+Устарел, заменен модулем jump_counter.py
+"""
+
 
 def checktime22():
     with open('params.json') as file:
@@ -90,7 +94,7 @@ def warn(bot, message, hours, minutes=00, seconds=00, rnd=False):
             if message_pinned:
                 try:
                     bot.unpin_chat_message(message.chat.id, ready30.message_id)
-                    bot.unpin_all_chat_messages(message.chat.id)            # FIXME сломалось по неясной причине
+                    bot.unpin_all_chat_messages(message.chat.id)
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:

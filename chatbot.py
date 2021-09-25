@@ -1,5 +1,5 @@
 def dialog_flow(message, token):
-    from apiai import ApiAI
+    from apiai import ApiAI     # TODO API переехал на v2, переделать или найти другой источник
     import json
     request = ApiAI(token).text_request()
     request.lang = 'ru'

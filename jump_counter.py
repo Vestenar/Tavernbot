@@ -132,7 +132,6 @@ class CounterJump:
             except apihelper.ApiTelegramException:
                 from settings import MY_ID
                 self.send(MY_ID, f'{chat} не открыл личные сообщения')
-            # TODO если лс закрыта выкидывать из списков? или добавлять в файлик
 
     def _countdown(self):
         """
