@@ -128,10 +128,13 @@ class CounterJump:
             warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
         for chat in warnlist:
             try:
-                self.send(int(chat), f'Готовность {end[time]}')
+                self.send(int(chat), f'Внимание, до {self.counter_name} осталось {end[time]}')
             except apihelper.ApiTelegramException:
                 from settings import MY_ID
-                self.send(MY_ID, f'{chat} не открыл личные сообщения')
+                with open("users.json") as file:
+                    user_list = json.loads(file.read())
+                    user = user_list[chat]
+                    self.send(MY_ID, f'{user} не открыл личные сообщения')
 
     def _countdown(self):
         """
@@ -239,7 +242,7 @@ class CounterJump:
         if self.timer_hh_message:
             self._resolve_time()
         else:
-            sent = self.send(self.chat_id, 'Установите время для запрыга в формате <b>ЧЧ:ММ:[СС]</b> [назначение] в '
+            sent = self.send(self.chat_id, 'Установите время для похода в формате <b>ЧЧ:ММ:[СС]</b> [назначение] в '
                                            'Reply на это сообщение\n<i>(указаное внутри [ ] не обязательно)</i>',
                              parse_mode='html')
 
@@ -261,10 +264,13 @@ class WarnUpdater:
         self.send = bot.send_message
         self.message = call.message
         self.user_id = str(call.from_user.id)
-        self.username = call.from_user.username
+        self.user = call.from_user
         self.chat_id = str(call.message.chat.id)
-        self.MAXLEN = 15
+        self.MAXLEN = 20
         self.bot_params = None
+        first_name = self.user.first_name if self.user.first_name else ''
+        last_name = (' ' + self.user.last_name) if self.user.last_name else ''
+        self.username = first_name + last_name
 
     def get_group(self):
         with open('params.json', 'r') as file, open('params.json.bck', 'a') as bckfile:
@@ -278,15 +284,28 @@ class WarnUpdater:
         with open('params.json', 'w') as file:
             file.write(json.dumps(self.bot_params))
 
+    def save_user(self):
+        with open('users.json', 'r+') as file:
+            user_list = json.loads(file.read())
+            file.seek(0)
+            user_list[self.user_id] = self.username
+            file.write(json.dumps(user_list))
+
     def set_reminder(self):
-        # TODO проверять длину списка, не превышает ли 15 (20?)
         group_list = self.get_group()
+        if len(group_list[self.time]) >= self.MAXLEN:
+            self.send(self.chat_id, 'Извините, очередь на это время уже переполнена, выберите другое. '
+                                    'Спасибо за понимание')
+            return
         for key in group_list:
             if self.user_id in group_list[key]:
                 group_list[key].remove(self.user_id)
         group_list[self.time].append(str(self.user_id))
         self.save_params()
-        self.send(self.chat_id, f'Оповещение для {self.username} успешно установлено на {self.time} мин.')
+        self.save_user()
+        self.send(self.chat_id, f"Оповещение для {self.username} успешно установлено на {self.time} мин.\n"
+                                f"<b>Не забудьте</b> написать мне в личку любое сообщение хотя бы однажды.",
+                  parse_mode='html')
         self.hide_menu()
 
     def remove_reminder(self):
@@ -295,7 +314,10 @@ class WarnUpdater:
             if self.user_id in group_list[key]:
                 group_list[key].remove(self.user_id)
         self.save_params()
-        self.send(self.chat_id, 'Оповещение отключено')
+        first_name = self.user.first_name if self.user.first_name else ''
+        last_name = (' ' + self.user.last_name) if self.user.last_name else ''
+        username = first_name + last_name
+        self.send(self.chat_id, f'Оповещение для {username} отключено')
         self.hide_menu()
 
     def hide_menu(self):
