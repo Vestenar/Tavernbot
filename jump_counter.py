@@ -177,7 +177,8 @@ class CounterJump:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
                         logfile.write(format(sys.exc_info()[0]))
-            self._get_delta(*self.timedata, refresh=True)
+            if self.counter_name != 'экстренного похода ':
+                self._get_delta(*self.timedata, refresh=True)
             time.sleep(self.timedelta - 3)
             self._final_countdown()
             if message_pinned:
