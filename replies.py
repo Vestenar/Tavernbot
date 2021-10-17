@@ -190,12 +190,6 @@ def reply(message):
             return choice(alko[9:]), 'sticker'
         else:
             return choice(zakus), 'text'
-    if 'wanttodrink' in found_phrases:
-        if message_date - last_drink >= 10:
-            last_drink = message_date
-            return choice(alko), 'sticker'
-        else:
-            return choice(zakus), 'text'
     if 'beer' in found_phrases:
         if message_date - last_drink >= 10:
             last_drink = message_date
@@ -212,6 +206,12 @@ def reply(message):
                   'Сок - это как вино, только без градуса? Есть, конечно.',
                   '*достает именной стакан*']
         return choice(answer), 'text'
+    if 'wanttodrink' in found_phrases:
+        if message_date - last_drink >= 10:
+            last_drink = message_date
+            return choice(alko), 'sticker'
+        else:
+            return choice(zakus), 'text'
 
     if 'себе' not in message and 'player' in found_phrases:
         from getgodville import god_info

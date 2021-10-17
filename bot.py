@@ -63,7 +63,7 @@ def skills_menu(message):
 
 
 # ------<<<------ Отобразить менюшку таймеров ------>>>------
-@bot.message_handler(regexp=r'(дай|назначь|установи) (время|таймер|напомин)|'
+@bot.message_handler(regexp=r'(дай|назначь|установи).* (время|таймер|напомин)|'
                             r'(назначь|напомни).* (данж|море|полигон|поход)')
 def dungeon(message):
     logging_messages(message)
