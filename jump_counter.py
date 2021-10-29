@@ -22,6 +22,7 @@ class CounterJump:
         self.messages_to_delete = []
         self.counter_name = 'гильдпохода в подземелье'
         self.timeset = False
+        self.timer_done = None
 
     def _hide_menu(self):
         self.rdy_menu = types.InlineKeyboardMarkup()
@@ -176,7 +177,7 @@ class CounterJump:
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write(format(sys.exc_info()[0]))
+                        logfile.write('pin 30 error: ' + format(sys.exc_info()[0]))
             if self.counter_name != 'экстренного похода ':
                 self._get_delta(*self.timedata, refresh=True)
             time.sleep(self.timedelta - 3)
@@ -184,10 +185,11 @@ class CounterJump:
             if message_pinned:
                 try:
                     self.bot.unpin_chat_message(self.chat_id, ready30.message_id)
+                    self.bot.unpin_chat_message(self.chat_id, self.timer_done)
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write(format(sys.exc_info()[0]))
+                        logfile.write('unpin messages error: ' + format(sys.exc_info()[0]))
         else:
             self.send(self.chat_id, 'Приготовьтесь, осталось {} секунд'.format(self.timedelta))
             time.sleep(self.timedelta - 3)
@@ -216,14 +218,14 @@ class CounterJump:
         elif self.counter_name.startswith('гильдпохода'):
             invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
                                "Не перепутайте кнопки. Сбор в"]
-            timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
+            self.timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
             if self.call.message.chat.type in ['group', 'supergroup']:
                 try:
-                    self.bot.pin_chat_message(self.chat_id, timer_done.message_id)
+                    self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write(format(sys.exc_info()[0]))
+                        logfile.write('pin announce error: ' + format(sys.exc_info()[0]))
         self._countdown()
 
     def run(self):
