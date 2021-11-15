@@ -67,11 +67,11 @@ def skills_menu(message):
 
 
 # ------<<<------ Прислать файл со списком гильдии ------>>>------
-@bot.message_handler(commands=['list'])
+@bot.message_handler(commands=['guildlist'])
 def list_message(message):
     logging_messages(message)
     from getgodville import list_god_guild
-    guildname = message.text[5:].strip()
+    guildname = message.text[10:].strip()
     filename = list_god_guild(guildname) if guildname else list_god_guild()
     if not filename:
         bot.send_message(message.chat.id, 'Название гильдии введено неправильно')
