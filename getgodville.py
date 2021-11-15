@@ -143,7 +143,7 @@ def god_guild(guildname):
     return out_text if out_text else 'В гильдии все спокойно'
 
 
-def list_god_guild(guildname='Длань Мора'):
+def list_god_guild(guildname='Завсегдатаи Старой Таверны'):
     headers, auth_token = check_state()
     session = requests.session()
     headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
