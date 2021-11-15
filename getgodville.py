@@ -70,7 +70,7 @@ def god_prognoz():
     return prognoz
 
 
-def god_guild(guildname):
+def check_state():
     headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                'Accept - Encoding': 'gzip, deflate, br',
                'Accept - Language': 'ru, en - US;q = 0.7, en;q = 0.3',
@@ -79,7 +79,7 @@ def god_guild(guildname):
                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:86.0) Gecko/20100101 Firefox/86.0'}
 
     def need_registration(auth_token):
-        url='https://godville.net/news'
+        url = 'https://godville.net/news'
         session = requests.session()
         r = session.get(url, headers=headers, cookies={'auth_token': auth_token})
         session.close()
@@ -107,6 +107,11 @@ def god_guild(guildname):
     if need_registration(auth_token):
         auth_token = register()
 
+    return headers, auth_token
+
+
+def god_guild(guildname):
+    headers, auth_token = check_state()
     session = requests.session()
     url = r'https://stats.godville.net/guilds/' + guildname
     resp = session.get(url, headers=headers, cookies={'auth_token': auth_token})
@@ -138,11 +143,52 @@ def god_guild(guildname):
     return out_text if out_text else 'В гильдии все спокойно'
 
 
+def list_god_guild(guildname='Длань Мора'):
+    headers, auth_token = check_state()
+    session = requests.session()
+    headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+               'Accept - Encoding': 'gzip, deflate, br',
+               'Accept - Language': 'ru, en - US;q = 0.7, en;q = 0.3',
+               'Connection': 'keep - alive', 'DNT': '1',
+               'Host': 'godville.net', 'Upgrade - Insecure - Requests': '1',
+               'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:86.0) Gecko/20100101 Firefox/86.0'}
+    url = r'https://godville.net/stats/guild/' + guildname
+    resp = session.get(url, headers=headers, cookies={'auth_token': auth_token})
+    from bs4 import BeautifulSoup
+    import csv
+    import datetime
+    import pytz
+    soup = BeautifulSoup(resp.text, 'lxml')
+    session.close()
+    if 'Неизвестная гильдия' in soup.text:
+        return None
+    table = soup.find('table', {'class': 'g_tbl'})
+    table_body = table.find('tbody')
+    rows = table_body.find_all('tr')
+    now = datetime.datetime.now(tz=pytz.timezone('Europe/Moscow'))
+    date = f'{now.year}/{now.month}/{now.day} {now.hour}:{now.minute}'
+    members = [['№', 'Имя', 'Уровень', 'Звание', 'актуально на: ', date]]
+    for row in rows:
+        line = row.findAll('td')
+        npp = line[0].text
+        name = line[1].text.split('\n')[0]
+        level = line[4].text
+        rank = line[6].text
+        members.append([npp, name, level, rank])
+    filename = f'список гильдии {guildname}.xls'
+    with open(filename, 'w', encoding='UTF8') as file:
+        writer = csv.writer(file, dialect='excel')
+        writer.writerow(members[0])
+        for line in members[1:]:
+            writer.writerow(line)
+    return filename
+
+
 if __name__ == '__main__':
     import time
-    print(god_info('drony'))
+    # print(god_info('drony'))
     # print(god_guild('Энлайт'))
-    # time.sleep(10)
+    time.sleep(2)
     # print(god_guild('4PDA'))
     # time.sleep(10)
     # print(god_guild('Завсегдатаи старой таверны'))
@@ -150,3 +196,4 @@ if __name__ == '__main__':
     # print(god_guild('Орден водяной вороны'))
     # time.sleep(10)
     # print(god_guild('asylum mortuis'))
+    print(list_god_guild('asylum mortuis'))

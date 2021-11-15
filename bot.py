@@ -40,12 +40,14 @@ def logging_messages(message):
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
+    logging_messages(message)
     bot.send_message(message.chat.id, 'Бармен приветствует Вас в Старой Таверне! '
                                       'Для получения информации отправьте команду /skills')
 
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
+    logging_messages(message)
     bot.send_message(message.chat.id,
                      'Бот может выбрать случайное время для вечернего похода гильдии в 22 часа в интервале '
                      'от 00 до 15 минут.\nВ 12 часов и в 17 часов время зафиксировано.'
@@ -54,12 +56,27 @@ def help_message(message):
 
 @bot.message_handler(commands=['curs'])
 def curs_message(message):
+    logging_messages(message)
     bot.send_message(message.chat.id, getinfo.get_currencies())
 
 
 @bot.message_handler(commands=['skills'])
 def skills_menu(message):
+    logging_messages(message)
     menu_games.skills_menu(bot, message)
+
+
+# ------<<<------ Прислать файл со списком гильдии ------>>>------
+@bot.message_handler(commands=['list'])
+def list_message(message):
+    logging_messages(message)
+    from getgodville import list_god_guild
+    guildname = message.text[5:].strip()
+    filename = list_god_guild(guildname) if guildname else list_god_guild()
+    if not filename:
+        bot.send_message(message.chat.id, 'Название гильдии введено неправильно')
+    else:
+        bot.send_document(message.chat.id, open(filename, 'rb'))
 
 
 # ------<<<------ Отобразить менюшку таймеров ------>>>------
@@ -73,6 +90,7 @@ def dungeon(message):
 # ------<<<------ Отобразить менюшку напоминаний ------>>>------
 @bot.message_handler(commands=['reminder'])
 def del_reminder(message):
+    logging_messages(message)
     if message.chat.type in ['group', 'supergroup']:
         menu_games.reminder_menu(bot, message)
     else:
@@ -94,7 +112,6 @@ def callback_buttons(call):
 
         if call.data in ['прыг 12', 'прыг 17', 'прыг 21', 'прыг 22']:
             hh = int(call.data.split()[1])
-            # timetojump.start_dungeon(bot, call, regular=True, time_msg=hh)
             a = jump_counter.CounterJump(bot, call, timer_message=hh)
             a.run()
 
@@ -104,7 +121,6 @@ def callback_buttons(call):
             a.run_fast(ss)
 
         elif call.data == 'settime':
-            # timetojump.start_dungeon(bot, call, regular=False)
             a = jump_counter.CounterJump(bot, call)
             a.run()
 
@@ -222,8 +238,6 @@ def send_logs(message):
 def delete_logs(message):
     if message.json['from']['id'] == my_id:
         with open(r'tavernerrors.log', 'w') as file:
-            file.write('cleared by request at {}\n'.format(datetime.now()))
-        with open(r'tavernmessages.log', 'w') as file:
             file.write('cleared by request at {}\n'.format(datetime.now()))
         with open(r'unpinerrors.log', 'w') as file:
             file.write('cleared by request at {}\n'.format(datetime.now()))

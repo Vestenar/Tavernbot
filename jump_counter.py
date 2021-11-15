@@ -23,6 +23,8 @@ class CounterJump:
         self.counter_name = 'гильдпохода в подземелье'
         self.timeset = False
         self.timer_done = None
+        self.ready30 = None
+        self.message_pinned = False
 
     def _hide_menu(self):
         self.rdy_menu = types.InlineKeyboardMarkup()
@@ -70,6 +72,14 @@ class CounterJump:
         self._clear_trash()
 
     def _clear_trash(self):
+        if self.message_pinned:  # TODO check if deleted messages unpins
+            try:
+                self.bot.unpin_chat_message(self.chat_id, self.ready30.message_id)
+                self.bot.unpin_chat_message(self.chat_id, self.timer_done.message_id)
+            except apihelper.ApiTelegramException:
+                import sys
+                with open(r'unpinerrors.log', 'a') as logfile:
+                    logfile.write(f'unpin messages error: {self.chat_id}\n' + format(sys.exc_info()))
         for i in self.messages_to_delete:
             time.sleep(1)
             self.bot.delete_message(self.chat_id, i.message_id)
@@ -123,7 +133,7 @@ class CounterJump:
         wait.start()
 
     def _warn_personal(self, time):
-        end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "1 минута"}
+        end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "1 минута", 30: "30 секунд"}
         with open('params.json') as file:
             bot_params = json.loads(file.read())
             warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
@@ -166,30 +176,24 @@ class CounterJump:
             self.timedelta = 60
         if self.timedelta > 30:
             time.sleep(self.timedelta - 30)
+            warn_personal = Thread(target=self._warn_personal, args=(30,))
+            warn_personal.start()
             self.timedelta = 30
-            ready30 = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 30 секунд')
-            self.messages_to_delete.append(ready30)
-            message_pinned = False
+            self.ready30 = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 30 секунд')
+            self.messages_to_delete.append(self.ready30)
+
             if self.call.message.chat.type in ['group', 'supergroup']:
                 try:
-                    self.bot.pin_chat_message(self.chat_id, ready30.message_id)
-                    message_pinned = True
+                    self.message_pinned = self.bot.pin_chat_message(self.chat_id, self.ready30.message_id)
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write('pin 30 error: ' + format(sys.exc_info()[0]))
+                        logfile.write(f'pin 30 error: {self.chat_id}\n' + format(sys.exc_info()))
             if self.counter_name != 'экстренного похода ':
                 self._get_delta(*self.timedata, refresh=True)
             time.sleep(self.timedelta - 3)
             self._final_countdown()
-            if message_pinned:
-                try:
-                    self.bot.unpin_chat_message(self.chat_id, ready30.message_id)
-                    self.bot.unpin_chat_message(self.chat_id, self.timer_done)
-                except apihelper.ApiTelegramException:
-                    import sys
-                    with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write('unpin messages error: ' + format(sys.exc_info()[0]))
+
         else:
             self.send(self.chat_id, 'Приготовьтесь, осталось {} секунд'.format(self.timedelta))
             time.sleep(self.timedelta - 3)
@@ -213,19 +217,21 @@ class CounterJump:
             return
 
         if self.timeset:
-            self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
-                                    '{}:{:02d}:{:02d}.'.format(*self.timedata))
+            self.timer_done = self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
+                                                      '{}:{:02d}:{:02d}.'.format(*self.timedata))
         elif self.counter_name.startswith('гильдпохода'):
             invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
                                "Не перепутайте кнопки. Сбор в"]
-            self.timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon), *self.timedata))
+            self.timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon),
+                                                                                    *self.timedata))
             if self.call.message.chat.type in ['group', 'supergroup']:
                 try:
                     self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
+                    self.message_pinned = True
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write('pin announce error: ' + format(sys.exc_info()[0]))
+                        logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
         self._countdown()
 
     def run(self):
