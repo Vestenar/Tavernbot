@@ -263,6 +263,15 @@ class CounterJump:
         self._hide_menu()
         self.timedelta = ss
         self.counter_name = 'экстренного похода '
+        self.timer_done = self.send(self.chat_id, f'Побежали в данжик через {ss} секунд')
+        if self.call.message.chat.type in ['group', 'supergroup']:
+            try:
+                self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
+                self.message_pinned = True
+            except apihelper.ApiTelegramException:
+                import sys
+                with open(r'unpinerrors.log', 'a') as logfile:
+                    logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
         self._countdown()
 
 
