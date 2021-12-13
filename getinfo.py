@@ -131,13 +131,13 @@ def get_football(league, group=None):
     elif league == 'euro':
         url = 'https://terrikon.com/europa-league/'
         # name = 'Европы'
-        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
+        parts = ['Cтыковые матчи за выход в 1/8 финала', '1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     elif league == 'konf':
         url = 'https://terrikon.com/conference-league/'
-        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
+        parts = ['Cтыковые матчи за выход в 1/8 финала', '1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     elif league == 'world':
         url = 'https://terrikon.com/worldcup-2022/'
-        parts = ['ЧМ-2022, Отбор. 1/2 финала', 'ЧМ-2022, Отбор. Финалы', '1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
+        parts = ['Отбор. 1/2 финала', 'Отбор. Финалы', '1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     headers = {'User-Agent': 'Mozilla/5.0', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     session = requests.Session()
     resp = session.get(url, headers=headers)
@@ -205,4 +205,6 @@ def get_promo():
 if __name__ == '__main__':
     print(get_football('world'))
     # print(get_football('euro'))
+    # print(get_football('konf'))
+    # print(get_football('champ'))
     # print(get_promo())
