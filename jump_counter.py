@@ -100,6 +100,7 @@ class CounterJump:
             self.counter_name = 'гильдпохода в море'
         elif self.timer_hh_message == 22:
             self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
+            self.timedata[0], self.timedata[1], self.timedata[2] = (18, 54, 12)
 
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
@@ -126,20 +127,32 @@ class CounterJump:
         self.timedata = [hh, mm, ss]
         dngn_type = 'в ' + dngn_type if dngn_type else ''
         self.counter_name = 'похода {}с {}'.format(dngn_type, message.json['from']['first_name'])
-        self.send(self.chat_id, 'Таймер для {} установлен: {:02d}:{:02d}:{:02d}.'.format(self.counter_name, hh, mm, ss))
+        self.timer_done = self.send(self.chat_id, 'Таймер для {} установлен: '
+                                                  '{:02d}:{:02d}:{:02d}.'.format(self.counter_name, hh, mm, ss))
         self.bot.edit_message_text('Время назначено', self.chat_id, self.message_id,
                                    reply_markup=self.rdy_menu)
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
 
+    def _pinmessage(self):
+        if self.call.message.chat.type in ['group', 'supergroup']:
+            try:
+                self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
+                self.message_pinned = True
+            except apihelper.ApiTelegramException:
+                import sys
+                with open(r'unpinerrors.log', 'a') as logfile:
+                    logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
+
     def _warn_personal(self, time):
-        end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "1 минута", 30: "30 секунд"}
+        end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "60 секунд", 30: "30 секунд"}
         with open('params.json') as file:
             bot_params = json.loads(file.read())
             warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
         for chat in warnlist:
             try:
-                self.send(int(chat), f'Внимание, до {self.counter_name} осталось {end[time]}')
+                self.send(int(chat), 'Внимание, до {} в {:02d}:{:02d}:{:02d} '
+                                     'осталось {}'.format(self.counter_name, *self.timedata, end[time]))
             except apihelper.ApiTelegramException:
                 from settings import MY_ID
                 with open("users.json") as file:
@@ -164,7 +177,8 @@ class CounterJump:
             self.timedelta = 180
         if self.timedelta > 120:
             time.sleep(self.timedelta - 120)
-            n = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 2 минуты')
+            n = self.send(self.chat_id, 'Приготовьтесь, до {} в {:02d}:{:02d}:{:02d} '
+                                        'осталось 2 минуты'.format(self.counter_name, *self.timedata))
             warn_personal = Thread(target=self._warn_personal, args=(2,))
             warn_personal.start()
             self.timedelta = 120
@@ -179,7 +193,8 @@ class CounterJump:
             warn_personal = Thread(target=self._warn_personal, args=(30,))
             warn_personal.start()
             self.timedelta = 30
-            self.ready30 = self.send(self.chat_id, f'Приготовьтесь, до {self.counter_name} осталось 30 секунд')
+            self.ready30 = self.send(self.chat_id, 'Приготовьтесь, до {} в {:02d}:{:02d}:{:02d} '
+                                                   'осталось 30 секунд'.format(self.counter_name, *self.timedata))
             self.messages_to_delete.append(self.ready30)
 
             if self.call.message.chat.type in ['group', 'supergroup']:
@@ -216,22 +231,17 @@ class CounterJump:
             self.send(self.chat_id, 'Предлагаю завтрашний поход объявить завтра!')
             return
 
-        if self.timeset:
+        if self.timedata[0] == 22 and self.timeset:
             self.timer_done = self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
-                                                      '{}:{:02d}:{:02d}.'.format(*self.timedata))
+                                                      '{:02d}:{:02d}:{:02d}.'.format(*self.timedata))
         elif self.counter_name.startswith('гильдпохода'):
-            invitetodungeon = ["Поход назначен на", "А пожалуйста!", "А пойдемте в данж! В",
+            invitetodungeon = ["Поход назначен на", "А пожалуйста!", "Есть желающие? Идём в",
                                "Не перепутайте кнопки. Сбор в"]
-            self.timer_done = self.send(self.chat_id, '{} {}:{:02d}:{:02d}.'.format(choice(invitetodungeon),
-                                                                                    *self.timedata))
-            if self.call.message.chat.type in ['group', 'supergroup']:
-                try:
-                    self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
-                    self.message_pinned = True
-                except apihelper.ApiTelegramException:
-                    import sys
-                    with open(r'unpinerrors.log', 'a') as logfile:
-                        logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
+            self.timer_done = self.send(self.chat_id, '{} {:02d}:{:02d}:{:02d}.'.format(choice(invitetodungeon),
+                                                                                        *self.timedata))
+        else:
+            self.timer_done = self.timer_done
+        self._pinmessage()
         self._countdown()
 
     def run(self):
@@ -264,14 +274,7 @@ class CounterJump:
         self.timedelta = ss
         self.counter_name = 'экстренного похода '
         self.timer_done = self.send(self.chat_id, f'Побежали в данжик через {ss} секунд')
-        if self.call.message.chat.type in ['group', 'supergroup']:
-            try:
-                self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
-                self.message_pinned = True
-            except apihelper.ApiTelegramException:
-                import sys
-                with open(r'unpinerrors.log', 'a') as logfile:
-                    logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
+        self._pinmessage()
         self._countdown()
 
 
@@ -295,7 +298,7 @@ class WarnUpdater:
             self.bot_params = json.loads(file.read())
             print(self.bot_params, file=bckfile)
             warn_list = self.bot_params["personalwarning"]
-            group_list = warn_list.setdefault(self.chat_id, {'1': [], '2': [], '3': [], '5': []})
+            group_list = warn_list.setdefault(self.chat_id, {'30': [], '1': [], '2': [], '3': [], '5': []})
             return group_list
 
     def save_params(self):
