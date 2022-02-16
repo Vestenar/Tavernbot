@@ -240,7 +240,7 @@ class CounterJump:
             self.timer_done = self.send(self.chat_id, '{} {:02d}:{:02d}:{:02d}.'.format(choice(invitetodungeon),
                                                                                         *self.timedata))
         else:
-            self.timer_done = self.timer_done
+            self.timer_done = self.timer_done  # creates in resolve_user_time()
         self._pinmessage()
         self._countdown()
 
