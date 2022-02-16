@@ -20,6 +20,7 @@ class CounterJump:
         self.timedelta = 0
         self.timedata = [0, 0, 0]  # hh, mm, ss
         self.messages_to_delete = []
+        self.messages_to_unpin = []
         self.counter_name = 'гильдпохода в подземелье'
         self.timeset = False
         self.timer_done = None
@@ -72,14 +73,15 @@ class CounterJump:
         self._clear_trash()
 
     def _clear_trash(self):
-        if self.message_pinned:  # TODO check if deleted messages unpins
-            try:
-                self.bot.unpin_chat_message(self.chat_id, self.ready30.message_id)
-                self.bot.unpin_chat_message(self.chat_id, self.timer_done.message_id)
-            except apihelper.ApiTelegramException:
-                import sys
-                with open(r'unpinerrors.log', 'a') as logfile:
-                    logfile.write(f'unpin messages error: {self.chat_id}\n' + format(sys.exc_info()))
+        # TODO check if deleted messages unpins
+        try:
+            for i in self.messages_to_unpin:
+                time.sleep(1)
+                self.bot.unpin_chat_message(self.chat_id, i)
+        except apihelper.ApiTelegramException:
+            import sys
+            with open(r'unpinerrors.log', 'a') as logfile:
+                logfile.write(f'unpin messages error: {self.chat_id}\n' + format(sys.exc_info()))
         for i in self.messages_to_delete:
             time.sleep(1)
             self.bot.delete_message(self.chat_id, i.message_id)
@@ -100,7 +102,6 @@ class CounterJump:
             self.counter_name = 'гильдпохода в море'
         elif self.timer_hh_message == 22:
             self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
-            self.timedata[0], self.timedata[1], self.timedata[2] = (18, 54, 12)
 
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
@@ -138,7 +139,7 @@ class CounterJump:
         if self.call.message.chat.type in ['group', 'supergroup']:
             try:
                 self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
-                self.message_pinned = True
+                self.messages_to_unpin.append(self.timer_done.message_id)
             except apihelper.ApiTelegramException:
                 import sys
                 with open(r'unpinerrors.log', 'a') as logfile:
@@ -200,6 +201,7 @@ class CounterJump:
             if self.call.message.chat.type in ['group', 'supergroup']:
                 try:
                     self.message_pinned = self.bot.pin_chat_message(self.chat_id, self.ready30.message_id)
+                    self.messages_to_unpin.append(self.ready30.message_id)
                 except apihelper.ApiTelegramException:
                     import sys
                     with open(r'unpinerrors.log', 'a') as logfile:
