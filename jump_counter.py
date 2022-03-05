@@ -101,6 +101,9 @@ class CounterJump:
             self.timedata[1], self.timedata[2] = (11, 21)
             self.counter_name = 'гильдпохода в море'
         elif self.timer_hh_message == 22:
+            self.timedata[1], self.timedata[2] = (3, 22)
+        elif self.timer_hh_message == 27:
+            self.timedata[0] = 22
             self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
 
         wait = Thread(target=self._get_delta, args=self.timedata)

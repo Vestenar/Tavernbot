@@ -110,7 +110,7 @@ def callback_buttons(call):
     global xo_message_to_delete, xo_turn, xo_state
     if call.message:
 
-        if call.data in ['прыг 12', 'прыг 17', 'прыг 21', 'прыг 22']:
+        if call.data in ['прыг 12', 'прыг 17', 'прыг 21', 'прыг 22', 'прыг 27']:
             hh = int(call.data.split()[1])
             a = jump_counter.CounterJump(bot, call, timer_message=hh)
             a.run()

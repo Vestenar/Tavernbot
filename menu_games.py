@@ -33,7 +33,8 @@ def jump_menu(bot, message):
     callback_button_12 = types.InlineKeyboardButton(text='12:01:12', callback_data='прыг 12')
     callback_button_17 = types.InlineKeyboardButton(text='17:01:17', callback_data='прыг 17')
     callback_button_21 = types.InlineKeyboardButton(text='21:11:21 море', callback_data='прыг 21')
-    callback_button_22 = types.InlineKeyboardButton(text='Случайное время в 22', callback_data='прыг 22')
+    callback_button_22 = types.InlineKeyboardButton(text='22:03:22', callback_data='прыг 22')
+    callback_button_22_rnd = types.InlineKeyboardButton(text='Случайное время в 22', callback_data='прыг 27')
     callback_button_xx = types.InlineKeyboardButton(text='Задайте время сами', callback_data='settime')
     callback_button_60 = types.InlineKeyboardButton(text='60 секунд', callback_data='60sec')
     callback_button_10 = types.InlineKeyboardButton(text='10 секунд', callback_data='10sec')
@@ -42,6 +43,7 @@ def jump_menu(bot, message):
     keyboard.row(callback_button_21)
     keyboard.row(callback_button_10, callback_button_60)
     keyboard.row(callback_button_xx)
+    keyboard.row(callback_button_22_rnd)
     keyboard_rnd = types.InlineKeyboardMarkup()                 # меню для остальных
     keyboard_rnd.row(callback_button_10)
     keyboard_rnd.row(callback_button_60)
