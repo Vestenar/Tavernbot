@@ -12,8 +12,8 @@ bot = TeleBot(bot_token)
 my_id = settings.MY_ID
 chats = settings.CHATS
 now = pytz.timezone('UTC')
-delay_min = 5 * 60
-delay_max = 20 * 60
+delay_min = 10 * 60
+delay_max = 30 * 60
 
 
 def score_counter(chat_id, user_id):
@@ -38,9 +38,12 @@ def save_user(user_id, username):
 
 def show_scores(chat_id):
     with open('mouse_scores.json') as file:
-        scores = json.loads(file.read())["mice_caught"][str(chat_id)]
+        scores = json.loads(file.read())["mice_caught"]
     with open('users.json') as file:
         user_list = json.loads(file.read())
+    if str(chat_id) not in scores:
+        return "В этом чате мышей не ловят"
+    scores = scores[str(chat_id)]
     rating = 'Рейтинг охотников на мышек в чате:\n'
     sorted_scores = sorted(scores, key=scores.get, reverse=True)
     for id in sorted_scores:
@@ -57,4 +60,4 @@ if __name__ == '__main__':
             for chat in chats:
                 mouse_appear(bot, chat)
 
-    # print(show_scores(297112989))
+    # print(show_scores(-123))
