@@ -101,7 +101,8 @@ class CounterJump:
             self.timedata[1], self.timedata[2] = (11, 21)
             self.counter_name = 'гильдпохода в море'
         elif self.timer_hh_message == 22:
-            self.timedata[1], self.timedata[2] = (3, 22)
+            self.timedata[1], self.timedata[2] = (10, 22)
+            self.counter_name = 'гильдпохода в зубастый данж'
         elif self.timer_hh_message == 27:
             self.timedata[0] = 22
             self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
@@ -149,20 +150,21 @@ class CounterJump:
                     logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
 
     def _warn_personal(self, time):
-        end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "60 секунд", 30: "30 секунд"}
-        with open('params.json') as file:
-            bot_params = json.loads(file.read())
-            warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
-        for chat in warnlist:
-            try:
-                self.send(int(chat), 'Внимание, до {} в {:02d}:{:02d}:{:02d} '
-                                     'осталось {}'.format(self.counter_name, *self.timedata, end[time]))
-            except apihelper.ApiTelegramException:
-                from settings import MY_ID
-                with open("users.json") as file:
-                    user_list = json.loads(file.read())
-                    user = user_list[chat]
-                    self.send(MY_ID, f'{user} не открыл личные сообщения')
+        if self.call.message.chat.type in ['group', 'supergroup']:
+            end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "60 секунд", 30: "30 секунд"}
+            with open('params.json') as file:
+                bot_params = json.loads(file.read())
+                warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
+            for chat in warnlist:
+                try:
+                    self.send(int(chat), 'Внимание, до {} в {:02d}:{:02d}:{:02d} '
+                                         'осталось {}'.format(self.counter_name, *self.timedata, end[time]))
+                except apihelper.ApiTelegramException:
+                    from settings import MY_ID
+                    with open("users.json") as file:
+                        user_list = json.loads(file.read())
+                        user = user_list[chat]
+                        self.send(MY_ID, f'{user} не открыл личные сообщения')
 
     def _countdown(self):
         """

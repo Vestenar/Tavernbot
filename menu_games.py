@@ -1,7 +1,7 @@
 from datetime import datetime
 from telebot import types
 from time import sleep
-from random import choice
+from random import choice, randint
 from settings import DEN_ID, MY_ID, GORGONA_ID, ZST_ID
 delay = 1.5
 
@@ -33,7 +33,7 @@ def jump_menu(bot, message):
     callback_button_12 = types.InlineKeyboardButton(text='12:01:12', callback_data='прыг 12')
     callback_button_17 = types.InlineKeyboardButton(text='17:01:17', callback_data='прыг 17')
     callback_button_21 = types.InlineKeyboardButton(text='21:11:21 море', callback_data='прыг 21')
-    callback_button_22 = types.InlineKeyboardButton(text='22:03:22', callback_data='прыг 22')
+    callback_button_22 = types.InlineKeyboardButton(text='22:10:22 Зуб. данж', callback_data='прыг 22')
     callback_button_22_rnd = types.InlineKeyboardButton(text='Случайное время в 22', callback_data='прыг 27')
     callback_button_xx = types.InlineKeyboardButton(text='Задайте время сами', callback_data='settime')
     callback_button_60 = types.InlineKeyboardButton(text='60 секунд', callback_data='60sec')
@@ -257,3 +257,15 @@ def xo_bot_move(state):
         state[choice(possible)] = 'O'
         return state
     return state
+
+
+def mouse_appear(bot, chat_id):
+    mouse_menu = types.InlineKeyboardMarkup()
+    mouse_button = types.InlineKeyboardButton(text='🐁', callback_data='mouse_caught')
+    mouse_menu.row(mouse_button)
+    mouse_message = bot.send_message(chat_id, 'Мышь! Мыыыышь!', reply_markup=mouse_menu)
+    sleep(randint(5, 10))
+    try:
+        bot.delete_message(chat_id, mouse_message.id)
+    except:
+        pass

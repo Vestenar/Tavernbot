@@ -199,7 +199,8 @@ def reply(message):
     if 'c2h5oh' in found_phrases:
         return choice(spirt), 'sticker'
     if 'tea_coffee' in found_phrases:
-        answer = ['Хотите этого? Может чего покрепче?', 'С сушками, ага, конечно', 'Щяс, набадяжу.']
+        answer = ['Хотите этого? Может чего покрепче?', 'С сушками, ага, конечно',
+                  'С сушками и копчеными эльфьими ушками', 'Щяс, набадяжу.']
         return choice(answer), 'text'
     if 'juice' in found_phrases:
         answer = ['Сооок? Ну это только для избранных! И только вишнёвый.',

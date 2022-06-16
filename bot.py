@@ -8,6 +8,7 @@ import menu_games
 import timetojump
 import jump_counter
 import settings
+import mouse_catcher
 
 # ------<<<------ Инициализация ------>>>------
 bot_token = settings.BOT_TOKEN
@@ -95,6 +96,13 @@ def del_reminder(message):
         menu_games.reminder_menu(bot, message)
     else:
         bot.send_message(message.chat.id, 'Установка персонального напоминания возможна только в групповом чате')
+
+
+# ------<<<------ Отобразить рейтинг мышиной охоты ------>>>------
+@bot.message_handler(commands=['scores'])
+def show_scores(message):
+    table = mouse_catcher.show_scores(message.chat.id)
+    bot.send_message(message.chat.id, table)
 
 
 # ------<<<------ Отобразить менюшку игр ------>>>------
@@ -222,6 +230,17 @@ def callback_buttons(call):
                 xo_state = menu_games.xo_bot_move(xo_state)
                 xo_state = menu_games.xo_end_game(xo_state)
                 xo_message_to_delete = menu_games.cross_zeros(bot, call, xo_message_to_delete, xo_state)
+
+        elif call.data == 'mouse_caught':
+            # TODO реализовать удаление при успешном нажатии через сокеты (?)
+            bot.delete_message(call.message.chat.id, call.message.id)
+            user = call.from_user
+            first_name = user.first_name if user.first_name else ''
+            last_name = (' ' + user.last_name) if user.last_name else ''
+            username = first_name + last_name
+            score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id)
+            bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}')
+            mouse_catcher.save_user(call.from_user.id, username)
 
 
 @bot.message_handler(regexp=r'!log')

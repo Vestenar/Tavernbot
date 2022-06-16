@@ -23,6 +23,7 @@ translate = {'name': '<b>Имя героя: </b>',
              'temple_completed_at': '<i><b>Храм отлит </b></i>',
              'ark_completed_at': '<i><b>Ковчег сколочен </b></i>',
              'book_at': '<i><b>Книжка дописана: </b></i>',
+             'souls_percent':	"<b>Душ накоплено: </b>",
              'boss_name': '<b>Боссяра: </b>',
              'boss_power': '<b>Шириной в </b>'
              }
@@ -75,13 +76,15 @@ def check_state():
                'Accept - Encoding': 'gzip, deflate, br',
                'Accept - Language': 'ru, en - US;q = 0.7, en;q = 0.3',
                'Connection': 'keep - alive', 'DNT': '1',
-               'Host': 'stats.godville.net', 'Upgrade - Insecure - Requests': '1',
+               # 'Host': 'stats.godville.net',        # breaks request
+               'Upgrade - Insecure - Requests': '1',
                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:86.0) Gecko/20100101 Firefox/86.0'}
 
     def need_registration(auth_token):
-        url = 'https://godville.net/news'
+        url = 'https://godville.net/login/login'
         session = requests.session()
         r = session.get(url, headers=headers, cookies={'auth_token': auth_token})
+        r.raise_for_status()
         session.close()
         return 'регистрация' in str(r.content.decode('utf-8', 'replace'))
 
@@ -94,6 +97,7 @@ def check_state():
         url = r'https://godville.net/login/login'
         session = requests.session()
         resp = session.post(url, data=params, headers=headers)
+        resp.raise_for_status()
         auth_token = resp.cookies['auth_token']
         with open('nobody.cks', 'w') as cks_file:
             cks_file.write(auth_token)
@@ -187,7 +191,7 @@ def list_god_guild(guildname='Завсегдатаи Старой Таверны
 if __name__ == '__main__':
     import time
     # print(god_info('drony'))
-    # print(god_guild('Энлайт'))
+    print(god_guild('Энлайт'))
     time.sleep(2)
     # print(god_guild('4PDA'))
     # time.sleep(10)
@@ -196,4 +200,4 @@ if __name__ == '__main__':
     # print(god_guild('Орден водяной вороны'))
     # time.sleep(10)
     # print(god_guild('asylum mortuis'))
-    print(list_god_guild('asylum mortuis'))
+    # print(list_god_guild('asylum mortuis'))
