@@ -84,7 +84,10 @@ class CounterJump:
                 logfile.write(f'unpin messages error: {self.chat_id}\n' + format(sys.exc_info()))
         for i in self.messages_to_delete:
             time.sleep(1)
-            self.bot.delete_message(self.chat_id, i.message_id)
+            try:
+                self.bot.delete_message(self.chat_id, i.message_id)
+            except:
+                pass
 
     def _resolve_time(self):
         """
@@ -93,12 +96,18 @@ class CounterJump:
 
         self.timedata[0] = self.timer_hh_message
 
+        if self.timer_hh_message == 6:
+            self.timedata[1], self.timedata[2] = (55, 55)
+            self.counter_name = 'гильдпохода в доброданж'
+        elif self.timer_hh_message == 10:
+            self.timedata[1], self.timedata[2] = (0, 0)
+            self.counter_name = 'гильдпохода в море'
         if self.timer_hh_message == 12:
             self.timedata[1], self.timedata[2] = (1, 12)
         elif self.timer_hh_message == 17:
             self.timedata[1], self.timedata[2] = (1, 17)
-        elif self.timer_hh_message == 21:
-            self.timedata[1], self.timedata[2] = (11, 21)
+        elif self.timer_hh_message == 20:
+            self.timedata[1], self.timedata[2] = (0, 0)
             self.counter_name = 'гильдпохода в море'
         elif self.timer_hh_message == 22:
             self.timedata[1], self.timedata[2] = (10, 22)

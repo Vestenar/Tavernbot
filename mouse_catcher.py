@@ -12,8 +12,8 @@ bot = TeleBot(bot_token)
 my_id = settings.MY_ID
 chats = settings.CHATS
 now = pytz.timezone('UTC')
-delay_min = 10 * 60
-delay_max = 30 * 60
+delay_min = 20 * 60
+delay_max = 60 * 60
 
 
 def score_counter(chat_id, user_id):

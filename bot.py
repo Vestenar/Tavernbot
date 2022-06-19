@@ -118,7 +118,7 @@ def callback_buttons(call):
     global xo_message_to_delete, xo_turn, xo_state
     if call.message:
 
-        if call.data in ['прыг 12', 'прыг 17', 'прыг 21', 'прыг 22', 'прыг 27']:
+        if call.data in ['прыг 6', 'прыг 10', 'прыг 12', 'прыг 17', 'прыг 20', 'прыг 22', 'прыг 27']:
             hh = int(call.data.split()[1])
             a = jump_counter.CounterJump(bot, call, timer_message=hh)
             a.run()
@@ -233,7 +233,10 @@ def callback_buttons(call):
 
         elif call.data == 'mouse_caught':
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
-            bot.delete_message(call.message.chat.id, call.message.id)
+            try:
+                bot.delete_message(call.message.chat.id, call.message.id)
+            except:
+                pass
             user = call.from_user
             first_name = user.first_name if user.first_name else ''
             last_name = (' ' + user.last_name) if user.last_name else ''
