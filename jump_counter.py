@@ -97,7 +97,7 @@ class CounterJump:
         self.timedata[0] = self.timer_hh_message
 
         if self.timer_hh_message == 6:
-            self.timedata[1], self.timedata[2] = (55, 55)
+            self.timedata[1], self.timedata[2] = (55, 0)
             self.counter_name = 'гильдпохода в доброданж'
         elif self.timer_hh_message == 10:
             self.timedata[1], self.timedata[2] = (0, 0)

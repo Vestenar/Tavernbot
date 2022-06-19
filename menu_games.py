@@ -30,7 +30,7 @@ def skills_menu(bot, message):
 def jump_menu(bot, message):
     whocan = {GORGONA_ID: 'gorgona', DEN_ID: 'den', MY_ID: 'vest', ZST_ID: "ZST"}
     keyboard = types.InlineKeyboardMarkup()
-    callback_button_06 = types.InlineKeyboardButton(text='06:55:55 Доброданж', callback_data='прыг 6')
+    callback_button_06 = types.InlineKeyboardButton(text='06:55:00 Доброданж', callback_data='прыг 6')
     callback_button_10 = types.InlineKeyboardButton(text='10:00:00 море', callback_data='прыг 10')
     callback_button_12 = types.InlineKeyboardButton(text='12:01:12', callback_data='прыг 12')
     callback_button_17 = types.InlineKeyboardButton(text='17:01:17', callback_data='прыг 17')
