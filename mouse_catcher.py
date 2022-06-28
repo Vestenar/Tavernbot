@@ -59,5 +59,6 @@ if __name__ == '__main__':
         if 7 <= ((utc_time.hour + 27) % 24) < 23:
             for chat in chats:
                 mouse_appear(bot, chat)
+                time.sleep(10)
 
     # print(show_scores(-123))
