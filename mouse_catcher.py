@@ -10,8 +10,7 @@ import json
 bot_token = settings.BOT_TOKEN
 bot = TeleBot(bot_token)
 my_id = settings.MY_ID
-# chats = settings.CHATS
-chats = -1001320841683
+chats = settings.CHATS
 now = pytz.timezone('UTC')
 delay_min = 20 * 60
 delay_max = 60 * 60
@@ -30,11 +29,13 @@ def score_counter(chat_id, user_id):
 
 
 def save_user(user_id, username):
-    with open('users.json', 'r+') as file:
+    with open('users.json', 'r') as file:
         user_list = json.loads(file.read())
         file.seek(0)
         user_list[str(user_id)] = username
-        file.write(json.dumps(user_list))
+        if str(user_id) not in user_list:
+            with open('users.json', 'w') as file:
+                file.write(json.dumps(user_list))
 
 
 def show_scores(chat_id):
