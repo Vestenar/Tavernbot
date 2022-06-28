@@ -1,4 +1,6 @@
 import logging
+import time
+
 from telebot import TeleBot, apihelper
 from datetime import datetime
 from random import choice
@@ -235,6 +237,7 @@ def callback_buttons(call):
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
             try:
                 bot.delete_message(call.message.chat.id, call.message.id)
+                time.sleep(3)
             except:
                 pass
             user = call.from_user
