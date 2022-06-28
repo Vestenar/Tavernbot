@@ -10,7 +10,8 @@ import json
 bot_token = settings.BOT_TOKEN
 bot = TeleBot(bot_token)
 my_id = settings.MY_ID
-chats = settings.CHATS
+# chats = settings.CHATS
+chats = -1001320841683
 now = pytz.timezone('UTC')
 delay_min = 20 * 60
 delay_max = 60 * 60
@@ -59,6 +60,5 @@ if __name__ == '__main__':
         if 7 <= ((utc_time.hour + 27) % 24) < 23:
             for chat in chats:
                 mouse_appear(bot, chat)
-                time.sleep(10)
 
     # print(show_scores(-123))
