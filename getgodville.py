@@ -81,7 +81,7 @@ def check_state():
                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:86.0) Gecko/20100101 Firefox/86.0'}
 
     def need_registration(auth_token):
-        url = 'https://godville.net/login/login'
+        url = 'https://godville.net/news'
         session = requests.session()
         r = session.get(url, headers=headers, cookies={'auth_token': auth_token})
         r.raise_for_status()
@@ -112,6 +112,18 @@ def check_state():
         auth_token = register()
 
     return headers, auth_token
+
+
+def get_coupon():
+    headers, auth_token = check_state()
+    session = requests.session()
+    url = 'https://godville.net/news'
+    resp = session.get(url, headers=headers, cookies={'auth_token': auth_token})
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(resp.text, 'lxml')
+    session.close()
+    coupon = soup.find('p', {'id': 'cpn_name'}).text.lower()
+    return '\n\nНе забывайте про ' + ' '.join(coupon.split())
 
 
 def god_guild(guildname):
@@ -191,8 +203,8 @@ def list_god_guild(guildname='Завсегдатаи Старой Таверны
 if __name__ == '__main__':
     import time
     # print(god_info('drony'))
-    print(god_guild('Энлайт'))
-    time.sleep(2)
+    # print(god_guild('Энлайт'))
+    # time.sleep(2)
     # print(god_guild('4PDA'))
     # time.sleep(10)
     # print(god_guild('Завсегдатаи старой таверны'))
@@ -201,3 +213,4 @@ if __name__ == '__main__':
     # time.sleep(10)
     # print(god_guild('asylum mortuis'))
     # print(list_god_guild('asylum mortuis'))
+    print(get_coupon())
