@@ -1,4 +1,5 @@
 import logging
+import random
 import time
 
 from telebot import TeleBot, apihelper
@@ -237,15 +238,34 @@ def callback_buttons(call):
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
             try:
                 bot.delete_message(call.message.chat.id, call.message.id)
-                time.sleep(3)
+                time.sleep(1)
             except:
                 pass
             user = call.from_user
             first_name = user.first_name if user.first_name else ''
             last_name = (' ' + user.last_name) if user.last_name else ''
             username = first_name + last_name
-            score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id)
+            score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
             bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}')
+            mouse_catcher.save_user(call.from_user.id, username)
+
+
+        elif call.data == 'rat_caught':
+            # TODO реализовать удаление при успешном нажатии через сокеты (?)
+            try:
+                bot.delete_message(call.message.chat.id, call.message.id)
+                time.sleep(1)
+            except:
+                pass
+            user = call.from_user
+            first_name = user.first_name if user.first_name else ''
+            last_name = (' ' + user.last_name) if user.last_name else ''
+            username = first_name + last_name
+            user_scores = mouse_catcher.get_score(call.message.chat.id, call.from_user.id)
+            mouse_eaten = random.randint(min(3, user_scores), min(10, user_scores))
+            score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - mouse_eaten)
+            bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса сожрала у {username} {mouse_eaten} мышек. '
+                                                   f'Теперь на счету {score}')
             mouse_catcher.save_user(call.from_user.id, username)
 
 

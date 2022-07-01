@@ -262,9 +262,13 @@ def xo_bot_move(state):
     return state
 
 
-def mouse_appear(bot, chat_id):
+def mouse_appear(bot, chat_id, rnd_mouse):
     mouse_menu = types.InlineKeyboardMarkup()
-    mouse_button = types.InlineKeyboardButton(text='🐁', callback_data='mouse_caught')
+    mouse_button = types.InlineKeyboardButton
+    if rnd_mouse == 'mouse':
+        mouse_button = types.InlineKeyboardButton(text='🐁', callback_data='mouse_caught')
+    elif rnd_mouse == 'rat':
+        mouse_button = types.InlineKeyboardButton(text='🐀', callback_data='rat_caught')
     mouse_menu.row(mouse_button)
     mouse_message = bot.send_message(chat_id, 'Мышь! Мыыыышь!', reply_markup=mouse_menu)
     sleep(randint(5, 10))
