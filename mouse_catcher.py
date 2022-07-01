@@ -32,8 +32,8 @@ def save_user(user_id, username):
     with open('users.json', 'r') as file:
         user_list = json.loads(file.read())
         file.seek(0)
-        user_list[str(user_id)] = username
         if str(user_id) not in user_list:
+            user_list[str(user_id)] = username
             with open('users.json', 'w') as file:
                 file.write(json.dumps(user_list))
 
@@ -63,4 +63,4 @@ if __name__ == '__main__':
                 mouse_appear(bot, chat)
                 time.sleep(30)
 
-    # print(show_scores(-123))
+    # print(show_scores(-1001320841683))
