@@ -1,6 +1,6 @@
 import logging
 import random
-import time
+import sys
 
 from telebot import TeleBot, apihelper
 from datetime import datetime
@@ -19,12 +19,12 @@ my_id = settings.MY_ID
 warning_to = settings.WHOWARN
 
 
-# ------<<<------ Инициализация X-O ------>>>------
+# ------<<<------ Инициализация мини-игр ------>>>------
 xo_state = [' '] * 9
 xo_message_to_delete, xo_turn = (None, None)
+mouse_busy = False
 
 bot = TeleBot(bot_token)
-# telebot.apihelper.proxy = {'https': 'socks5h://alexneupok_9cmkn:gpbvksqrce@socks-us.windscribe.com:1080'}
 
 # ------<<<------ Оповещения о перезапуске ------>>>------
 for ident in warning_to.keys():
@@ -119,6 +119,7 @@ def dungeon(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_buttons(call):
     global xo_message_to_delete, xo_turn, xo_state
+    global mouse_busy
     if call.message:
 
         if call.data in ['прыг 6', 'прыг 10', 'прыг 12', 'прыг 17', 'прыг 20', 'прыг 22', 'прыг 27']:
@@ -236,37 +237,45 @@ def callback_buttons(call):
 
         elif call.data == 'mouse_caught':
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
-            try:
-                bot.delete_message(call.message.chat.id, call.message.id)
-                time.sleep(1)
-            except:
-                pass
-            user = call.from_user
-            first_name = user.first_name if user.first_name else ''
-            last_name = (' ' + user.last_name) if user.last_name else ''
-            username = first_name + last_name
-            score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
-            bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}')
-            mouse_catcher.save_user(call.from_user.id, username)
+            if not mouse_busy:
+                mouse_busy = True
+                try:
+                    bot.delete_message(call.message.chat.id, call.message.id)
+                except:
+                    pass
+                user = call.from_user
+                first_name = user.first_name if user.first_name else ''
+                last_name = (' ' + user.last_name) if user.last_name else ''
+                username = first_name + last_name
+                score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
+                bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}.')
+                mouse_catcher.save_user(call.from_user.id, username)
+                mouse_busy = False
 
 
         elif call.data == 'rat_caught':
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
-            try:
-                bot.delete_message(call.message.chat.id, call.message.id)
-                time.sleep(1)
-            except:
-                pass
-            user = call.from_user
-            first_name = user.first_name if user.first_name else ''
-            last_name = (' ' + user.last_name) if user.last_name else ''
-            username = first_name + last_name
-            user_scores = mouse_catcher.get_score(call.message.chat.id, call.from_user.id)
-            mouse_eaten = random.randint(min(3, user_scores), min(10, user_scores))
-            score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - mouse_eaten)
-            bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса сожрала у {username} {mouse_eaten} мышек. '
-                                                   f'Теперь на счету {score}')
-            mouse_catcher.save_user(call.from_user.id, username)
+            if not mouse_busy:
+                mouse_busy = True
+                try:
+                    bot.delete_message(call.message.chat.id, call.message.id)
+                except:
+                    pass
+                user = call.from_user
+                first_name = user.first_name if user.first_name else ''
+                last_name = (' ' + user.last_name) if user.last_name else ''
+                username = first_name + last_name
+                user_scores = mouse_catcher.get_score(call.message.chat.id, call.from_user.id)
+                mouse_eaten = random.randint(min(3, user_scores), min(10, user_scores))
+                score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - mouse_eaten)
+                if not mouse_eaten:
+                    bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса очень хотела поживиться мышками '
+                                                           f'{username}, но ее кто-то опередил.')
+                else:
+                    bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса пожрала мышек у {username}, '
+                                                           f'аж {mouse_eaten} за раз! Теперь на счету {score}.')
+                mouse_catcher.save_user(call.from_user.id, username)
+                mouse_busy = False
 
 
 @bot.message_handler(regexp=r'!log')
@@ -331,4 +340,5 @@ logging.basicConfig(filename="tavernerrors.log", format='%(asctime)s - %(message
 try:
     bot.polling(none_stop=True)
 except Exception:
-    pass
+    with open(r'tavernerrors.log', 'a') as logfile:
+        logfile.write(f'An error occured: ' + format(sys.exc_info()))
