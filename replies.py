@@ -1,6 +1,5 @@
 from random import choice
 import time
-from settings import TAFI_ID
 from settings import CHATBOT_TOKEN as chatbot_token
 
 last_drink = 0
@@ -60,9 +59,6 @@ zakus = ["Закусывайте, закусывайте! Не частите!",
 bothere = ["Я здесь!", "Чего изволите?", "Это я. Как поживаете?", "Да-да?",
            "Нет, увы.", "Вовсе нет.", "Нет меня.", "Отнюдь!", "Шо, опять?!", "Ну конечно же!",
            "Не отвлекайте, пожалуйста! Я же занят!", "Ах, оставьте!", "Хотите взгляд, полный понимания?"]
-botheretafi = ["Я здесь, Ваше Величество!", "Чего изволите, Ваша Светлость?",
-               "Это я, Вашество. Как поживает благородная особа?",
-               "Я главный бармен в этом заведении! Но Вам, любезная, с радостью уступлю."]
 payment = ["Стоять за стойкой одно удовольствие! А не стоять - другое.",
            '*достает банку с надписью "Чаевые Арчи"*',
            '*с грустью смотрит на банку с надписью "Чаевые Арчи"*',
@@ -238,15 +234,12 @@ def reply(message):
         if try_ans:
             return try_ans, 'text'
         else:
-            if seller_id == TAFI_ID:        # на Тафи
-                return choice(botheretafi), 'text'
-            else:
-                return choice(bothere), 'text'
+            return choice(bothere), 'text'
     return None, None
 
 
 if __name__ == '__main__':
-    import json
+    # import json
     # with open('params.txt') as init_file:
     #     bot_params = json.loads(init_file.read())
     #     chatbot_token = bot_params["chatbot_token"]
