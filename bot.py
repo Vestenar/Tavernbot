@@ -341,4 +341,4 @@ try:
     bot.polling(none_stop=True)
 except Exception:
     with open(r'tavernerrors.log', 'a') as logfile:
-        logfile.write(f'\nAn error occured: ' + format(sys.exc_info()))
+        logfile.write(f'An error occured: {format(sys.exc_info())}\n')
