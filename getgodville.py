@@ -136,7 +136,7 @@ def god_guild(guildname):
     session.close()
     groups = soup.find_all('div', {'class': 'm_groups'})
     out_text = ''
-    for motion in ['Новые медали', 'Годовщины', 'Ушли', 'Уходят', 'Пришли']:
+    for motion in ['Новые медали', 'Годовщины', 'Ушли', 'Уходят', 'Пришли', 'Приходят']:
         group1 = []
         group2 = []
         text = []
