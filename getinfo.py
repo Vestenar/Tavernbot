@@ -137,7 +137,7 @@ def get_football(league, group=None):
         parts = ['Cтыковые матчи за выход в 1/8 финала', '1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     elif league == 'world':
         url = 'https://terrikon.com/worldcup-2022/'
-        parts = ['Отбор. 1/2 финала', 'Отбор. Финалы', '1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
+        parts = ['1/8 финала', '1/4 финала', '1/2 финала', 'Финал']
     headers = {'User-Agent': 'Mozilla/5.0', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     session = requests.Session()
     resp = session.get(url, headers=headers)
@@ -155,7 +155,7 @@ def get_football(league, group=None):
             # games = soup.find_all('table', {'class': 'gameresult'})[part]
             games = soup.select_one(f'h2:-soup-contains("{part}")')
             if not games:
-                return table + f'игры {parts[0]} еще не начались'
+                return table + f'игры {parts[0]} еще не определены'
             games = games.find_next('table')
             if '-:-' in games.text:
                 table += part + '\n\n'

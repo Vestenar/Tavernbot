@@ -30,23 +30,34 @@ def skills_menu(bot, message):
 def jump_menu(bot, message):
     whocan = {GORGONA_ID: 'gorgona', DEN_ID: 'den', MY_ID: 'vest', ZST_ID: "ZST"}
     keyboard = types.InlineKeyboardMarkup()
-    callback_button_06 = types.InlineKeyboardButton(text='06:55:00 Доброданж', callback_data='прыг 6')
-    callback_button_10 = types.InlineKeyboardButton(text='10:00:00 море', callback_data='прыг 10')
-    callback_button_12 = types.InlineKeyboardButton(text='12:01:12', callback_data='прыг 12')
-    callback_button_17 = types.InlineKeyboardButton(text='17:01:17', callback_data='прыг 17')
-    callback_button_20 = types.InlineKeyboardButton(text='20:00:00 море', callback_data='прыг 20')
-    callback_button_22 = types.InlineKeyboardButton(text='22:10:22 Зубастый данж', callback_data='прыг 22')
-    callback_button_22_rnd = types.InlineKeyboardButton(text='Случайное время в 22', callback_data='прыг 27')
+    callback_button_06 = types.InlineKeyboardButton(text='06:55:00 доброданж',
+                                                    callback_data='прыг,доброданж,06,55,00')
+    callback_button_10 = types.InlineKeyboardButton(text='10:00:00 море',
+                                                    callback_data='прыг,море,10,00,00')
+    callback_button_12 = types.InlineKeyboardButton(text='12:01:12 лаб. данж',
+                                                    callback_data='прыг,лаб. данж,12,01,12')
+    callback_button_17 = types.InlineKeyboardButton(text='17:01:17 лаб. данж',
+                                                    callback_data='прыг,лаб. данж,17,01,17')
+    callback_button_20 = types.InlineKeyboardButton(text='20:00:00 море',
+                                                    callback_data='прыг,море,20,00,00')
+    callback_button_22_01 = types.InlineKeyboardButton(text='22:01:22 лаб. данж',
+                                                       callback_data='прыг,лаб. данж,22,01,22')
+    callback_button_22_10 = types.InlineKeyboardButton(text='22:10:22 охот. данж',
+                                                       callback_data='прыг,данж,22,10,22')
+    # callback_button_22_rnd = types.InlineKeyboardButton(text='Случайное время в 22',
+    #                                                     callback_data='прыг,данж,27,00,00')
     callback_button_xx = types.InlineKeyboardButton(text='Задайте время сами', callback_data='settime')
     callback_button_60s = types.InlineKeyboardButton(text='60 секунд', callback_data='60sec')
     callback_button_10s = types.InlineKeyboardButton(text='10 секунд', callback_data='10sec')
+
     keyboard.row(callback_button_06)                        # меню для таверны (whocan)
     keyboard.row(callback_button_12, callback_button_17)
-    keyboard.row(callback_button_22)
+    keyboard.row(callback_button_22_01, callback_button_22_10)
     keyboard.row(callback_button_10, callback_button_20)
     keyboard.row(callback_button_10s, callback_button_60s)
     keyboard.row(callback_button_xx)
-    keyboard.row(callback_button_22_rnd)
+    # keyboard.row(callback_button_22_rnd)
+
     keyboard_rnd = types.InlineKeyboardMarkup()             # меню для остальных
     keyboard_rnd.row(callback_button_10s)
     keyboard_rnd.row(callback_button_60s)

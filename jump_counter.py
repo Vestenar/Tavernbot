@@ -8,34 +8,34 @@ from threading import Thread
 
 
 class CounterJump:
-    def __init__(self, bot, call, timer_message=None):
-        # Thread.__init__(self)
+    def __init__(self, bot, call, event_name=None, event_time=None, pin_on=True):
 
-        self.timer_hh_message = timer_message
         self.bot = bot
         self.send = bot.send_message
         self.call = call
         self.chat_id = call.message.chat.id
         self.message_id = self.call.message.message_id
         self.timedelta = 0
-        self.timedata = [0, 0, 0]  # hh, mm, ss
+        self.timedata = list(map(int, event_time)) if event_time else [0, 0, 0]
         self.messages_to_delete = []
         self.messages_to_unpin = []
-        self.counter_name = 'гильдпохода в подземелье'
+        self.counter_name = f'гильдпохода в {event_name}' if event_name else None
         self.timeset = False
         self.timer_done = None
         self.ready30 = None
         self.message_pinned = False
+        self.pin_on = pin_on
 
     def _hide_menu(self):
-        self.rdy_menu = types.InlineKeyboardMarkup()
-        ready = types.InlineKeyboardButton(text='Отсчет запущен', callback_data='done')
-        self.rdy_menu.row(ready)
-        self.blocking_menu = types.InlineKeyboardMarkup()
-        block = types.InlineKeyboardButton(text='.....', callback_data='done')
-        self.blocking_menu.row(block)
-        self.bot.edit_message_text('Время назначено', self.chat_id, self.message_id,
-                                   reply_markup=self.rdy_menu)
+        if self.message_id:
+            self.rdy_menu = types.InlineKeyboardMarkup()
+            ready = types.InlineKeyboardButton(text='Отсчет запущен', callback_data='done')
+            self.rdy_menu.row(ready)
+            self.blocking_menu = types.InlineKeyboardMarkup()
+            block = types.InlineKeyboardButton(text='.....', callback_data='done')
+            self.blocking_menu.row(block)
+            self.bot.edit_message_text('Время назначено', self.chat_id, self.message_id,
+                                       reply_markup=self.rdy_menu)
 
     def _check_22_time(self):
         """
@@ -93,29 +93,27 @@ class CounterJump:
         """
         устанавливает время для выбранного стандартного времени
         """
-
-        self.timedata[0] = self.timer_hh_message
-
-        if self.timer_hh_message == 6:
-            self.timedata[1], self.timedata[2] = (55, 0)
-            self.counter_name = 'гильдпохода в доброданж'
-        elif self.timer_hh_message == 10:
-            self.timedata[1], self.timedata[2] = (0, 0)
-            self.counter_name = 'гильдпохода в море'
-        if self.timer_hh_message == 12:
-            self.timedata[1], self.timedata[2] = (1, 12)
-        elif self.timer_hh_message == 17:
-            self.timedata[1], self.timedata[2] = (1, 17)
-        elif self.timer_hh_message == 20:
-            self.timedata[1], self.timedata[2] = (0, 0)
-            self.counter_name = 'гильдпохода в море'
-        elif self.timer_hh_message == 22:
-            self.timedata[1], self.timedata[2] = (10, 22)
-            self.counter_name = 'гильдпохода в зубастый данж'
-        elif self.timer_hh_message == 27:
-            self.timedata[0] = 22
-            self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
-
+        # self.timedata[0] = self.timer_hh_message
+        #
+        # if self.timer_hh_message == 6:
+        #     self.timedata[1], self.timedata[2] = (55, 0)
+        #     self.counter_name = 'гильдпохода в доброданж'
+        # elif self.timer_hh_message == 10:
+        #     self.timedata[1], self.timedata[2] = (0, 0)
+        #     self.counter_name = 'гильдпохода в море'
+        # if self.timer_hh_message == 12:
+        #     self.timedata[1], self.timedata[2] = (1, 12)
+        # elif self.timer_hh_message == 17:
+        #     self.timedata[1], self.timedata[2] = (1, 17)
+        # elif self.timer_hh_message == 20:
+        #     self.timedata[1], self.timedata[2] = (0, 0)
+        #     self.counter_name = 'гильдпохода в море'
+        # elif self.timer_hh_message == 22:
+        #     self.timedata[1], self.timedata[2] = (10, 22)
+        #     self.counter_name = 'гильдпохода в зубастый данж'
+        # elif self.timer_hh_message == 27:
+        #     self.timedata[0] = 22
+        #     self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
 
@@ -149,7 +147,7 @@ class CounterJump:
         wait.start()
 
     def _pinmessage(self):
-        if self.call.message.chat.type in ['group', 'supergroup']:
+        if self.pin_on and self.call.message.chat.type in ['group', 'supergroup']:
             try:
                 self.bot.pin_chat_message(self.chat_id, self.timer_done.message_id)
                 self.messages_to_unpin.append(self.timer_done.message_id)
@@ -158,16 +156,16 @@ class CounterJump:
                 with open(r'unpinerrors.log', 'a') as logfile:
                     logfile.write(f'pin announce error: {self.chat_id}\n' + format(sys.exc_info()))
 
-    def _warn_personal(self, time):
+    def _warn_personal(self, pers_time):
         if self.call.message.chat.type in ['group', 'supergroup']:
             end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "60 секунд", 30: "30 секунд"}
             with open('params.json') as file:
                 bot_params = json.loads(file.read())
-                warnlist = bot_params["personalwarning"][str(self.chat_id)][str(time)]
+                warnlist = bot_params["personalwarning"][str(self.chat_id)][str(pers_time)]
             for chat in warnlist:
                 try:
                     self.send(int(chat), 'Внимание, до {} в {:02d}:{:02d}:{:02d} '
-                                         'осталось {}'.format(self.counter_name, *self.timedata, end[time]))
+                                         'осталось {}'.format(self.counter_name, *self.timedata, end[pers_time]))
                 except apihelper.ApiTelegramException:
                     from settings import MY_ID
                     with open("users.json") as file:
@@ -212,7 +210,7 @@ class CounterJump:
                                                    'осталось 30 секунд'.format(self.counter_name, *self.timedata))
             self.messages_to_delete.append(self.ready30)
 
-            if self.call.message.chat.type in ['group', 'supergroup']:
+            if self.pin_on and self.call.message.chat.type in ['group', 'supergroup']:
                 try:
                     self.message_pinned = self.bot.pin_chat_message(self.chat_id, self.ready30.message_id)
                     self.messages_to_unpin.append(self.ready30.message_id)
@@ -240,7 +238,6 @@ class CounterJump:
         target_time = datetime(now.year, now.month, now.day, ((hh + 21) % 24), mm, ss, tzinfo=utc)
         time_delta = (target_time - now)
         self.timedelta = time_delta.seconds
-
         if refresh:
             return
         if time_delta.days < 0:
@@ -274,13 +271,13 @@ class CounterJump:
         очистить спам-сообщения таймера
         """
         self._hide_menu()
-        if self.timer_hh_message:
+        if self.counter_name:
             self._resolve_time()
         else:
             sent = self.send(self.chat_id, 'Установите время для похода в формате <b>ЧЧ:ММ:[СС]</b> [назначение] в '
                                            'Reply на это сообщение\n<i>(указаное внутри [ ] не обязательно)</i>',
                              parse_mode='html')
-
+            self.messages_to_delete.append(sent)
             self.bot.edit_message_text('Жду ответа от пользователя', self.chat_id,
                                        self.message_id, reply_markup=self.blocking_menu)
             self.bot.register_for_reply(sent, callback=self._resolve_user_time)
@@ -362,3 +359,22 @@ class WarnUpdater:
         ready = types.InlineKeyboardButton(text='Готово', callback_data='done')
         rdy_menu.row(ready)
         self.bot.edit_message_text('Напоминание установлено', self.chat_id, self.message.id, reply_markup=rdy_menu)
+
+
+def autostart_timers(bot, chat_id, user_timers):
+    from collections import namedtuple
+    from settings import ZST_ID
+
+    default_timers = []
+    if chat_id in [ZST_ID]:
+        default_timers = ['доброданж,06,55,00', 'море,10,00,00', 'лаб. данж,12,01,12',
+                          'лаб. данж,17,01,17', 'море,20,00,00', 'лаб. данж,22,01,22', 'данж,22,10,22']
+    timers = default_timers + user_timers
+    chat = namedtuple('chat', ['id', 'type'])
+    message = namedtuple('message', ['chat', 'message_id'])
+    call = namedtuple('call', ['message'])
+    auto_call = call(message(chat(chat_id, 'group'), None))
+    for timer in timers:
+        event, *event_time = timer.split(',')
+        timer = CounterJump(bot, auto_call, event, event_time, pin_on=False)
+        timer.run()

@@ -33,6 +33,12 @@ for ident in warning_to.keys():
     except apihelper.ApiTelegramException:
         bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
 
+# ------<<<------ Перезапуск таймеров ------>>>------
+chatlist = [settings.MY_ID]     # TODO реализовать автоперезапуск для ZST
+user_timers = []
+for chat in chatlist:
+    jump_counter.autostart_timers(bot, chat, user_timers)
+
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
 def logging_messages(message):
@@ -122,9 +128,9 @@ def callback_buttons(call):
     global mouse_busy
     if call.message:
 
-        if call.data in ['прыг 6', 'прыг 10', 'прыг 12', 'прыг 17', 'прыг 20', 'прыг 22', 'прыг 27']:
-            hh = int(call.data.split()[1])
-            a = jump_counter.CounterJump(bot, call, timer_message=hh)
+        if call.data.startswith('прыг'):
+            _, event, *event_time = call.data.split(',')
+            a = jump_counter.CounterJump(bot, call, event_name=event, event_time=event_time)
             a.run()
 
         elif call.data in ['10sec', '60sec']:
@@ -251,7 +257,6 @@ def callback_buttons(call):
                 bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = False
-
 
         elif call.data == 'rat_caught':
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
