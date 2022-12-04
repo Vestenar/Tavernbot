@@ -77,11 +77,12 @@ def check_group(message):
 
 def reply(message):
     from re import findall
-    seller_name, seller_id, message_date = ('', 0, time.time())
+    seller_name, seller_id, message_date, chat_is_private = ('', 0, time.time(), False)
     if type(message) != str:
         seller_name = message.json["from"]["first_name"]
         seller_id = message.json["from"]["id"]
         message_date = message.json['date']
+        chat_is_private = message.json['chat']['type'] == 'private'
         message = message.text.lower()
     else:
         message = message.lower()
@@ -120,6 +121,8 @@ def reply(message):
     for phrase in re_phrases:
         if findall(re_phrases[phrase], message):
             found_phrases.append(phrase)
+    if chat_is_private:
+        found_phrases.append('botname')
     findall = None
 
     miau = ['Мяу! Чего б и не мяукнуть по пьяни, да?', 'МЯУ! Так надо?',
