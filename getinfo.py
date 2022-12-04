@@ -28,7 +28,7 @@ def get_story():
     antimat = 'Возможна ненормативная лексика. ' \
               'Чтобы увидеть слово отключите цензор в низу страницы и обновите страницу. '
     MAXLEN = 1000
-    LAST_STORY = 16738
+    LAST_STORY = 16987
     for _ in range(10):
         number = randint(1, LAST_STORY)
         get_url = url + str(number)
