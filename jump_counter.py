@@ -240,20 +240,21 @@ class CounterJump:
         self.timedelta = time_delta.seconds
         if refresh:
             return
-        if time_delta.days < 0:
-            self.send(self.chat_id, 'Предлагаю завтрашний поход объявить завтра!')
-            return
+        if self.pin_on:
+            if time_delta.days < 0:
+                self.send(self.chat_id, 'Предлагаю завтрашний поход объявить завтра!')
+                return
 
-        if self.timedata[0] == 22 and self.timeset:
-            self.timer_done = self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
-                                                      '{:02d}:{:02d}:{:02d}.'.format(*self.timedata))
-        elif self.counter_name.startswith('гильдпохода'):
-            invitetodungeon = ["Поход назначен на", "А пожалуйста!", "Есть желающие? Идём в",
-                               "Не перепутайте кнопки. Сбор в"]
-            self.timer_done = self.send(self.chat_id, '{} {:02d}:{:02d}:{:02d}.'.format(choice(invitetodungeon),
-                                                                                        *self.timedata))
-        else:
-            self.timer_done = self.timer_done  # creates in resolve_user_time()
+            if self.timedata[0] == 22 and self.timeset:
+                self.timer_done = self.send(self.chat_id, 'Сегодняшнее время гильдпохода уже было назначено на '
+                                                          '{:02d}:{:02d}:{:02d}.'.format(*self.timedata))
+            elif self.counter_name.startswith('гильдпохода'):
+                invitetodungeon = ["Поход назначен на", "А пожалуйста!", "Есть желающие? Идём в",
+                                   "Не перепутайте кнопки. Сбор в"]
+                self.timer_done = self.send(self.chat_id, '{} {:02d}:{:02d}:{:02d}.'.format(choice(invitetodungeon),
+                                                                                            *self.timedata))
+            else:
+                self.timer_done = self.timer_done  # creates in resolve_user_time()
         self._pinmessage()
         self._countdown()
 
@@ -378,3 +379,5 @@ def autostart_timers(bot, chat_id, user_timers):
         event, *event_time = timer.split(',')
         timer = CounterJump(bot, auto_call, event, event_time, pin_on=False)
         timer.run()
+        time.sleep(0.1)
+    bot.send_message(chat_id, 'Таймеры на текущий день установлены автоматически')
