@@ -114,7 +114,7 @@ def reply(message):
         'football_euro': r'лиг.+ европы',
         'football_champ': r'лиг.+ чемпионов',
         'football_konference': r'лиг.+ конференц',
-        'football_world': r'чемпионат.+ мира|чм-?22'
+        'football_world': r'чемпион.+ мира|чм-?22'
     }
     found_phrases = []
 
