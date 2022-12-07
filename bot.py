@@ -34,7 +34,7 @@ for ident in warning_to.keys():
         bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
 
 # ------<<<------ Перезапуск таймеров ------>>>------
-chatlist = [settings.MY_ID]     # TODO реализовать автоперезапуск для ZST
+chatlist = [settings.ZST_ID]
 user_timers = []
 for chat in chatlist:
     jump_counter.autostart_timers(bot, chat, user_timers)
