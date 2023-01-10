@@ -10,7 +10,7 @@ import json
 bot_token = settings.BOT_TOKEN
 bot = TeleBot(bot_token)
 my_id = settings.MY_ID
-chats = settings.CHATS
+chats = settings.MOUSE_CHATS
 delay_min = 20 * 60
 delay_max = 60 * 60
 ratio = 7
