@@ -282,7 +282,7 @@ def mouse_appear(bot, chat_id, rnd_mouse):
         mouse_button = types.InlineKeyboardButton(text='🐀', callback_data='rat_caught')
     mouse_menu.row(mouse_button)
     mouse_message = bot.send_message(chat_id, 'Мышь! Мыыыышь!', reply_markup=mouse_menu)
-    sleep(randint(5, 10))
+    sleep(randint(15, 20))
     try:
         bot.delete_message(chat_id, mouse_message.id)
     except:
