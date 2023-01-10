@@ -343,9 +343,7 @@ def reply_text(message):
 
 logging.basicConfig(filename="tavernerrors.log", format='%(asctime)s - %(message)s', level=logging.ERROR)
 try:
-    bot.polling(none_stop=True,
-                skip_pending=True,
-                interval=5)
+    bot.polling(none_stop=True)
 except Exception:
     with open(r'tavernerrors.log', 'a') as logfile:
         logfile.write(f'An error occured: {format(sys.exc_info())}\n')
