@@ -8,3 +8,4 @@ ZST_ID = -int
 WHOWARN = {"ID": "name"}
 WHONOTWARN = {"ID": "name", "ID": "name", "ID": "name"}
 CHATS = {"Group_ID": "Group_name", "Group_ID": "Group_name"}
+MOUSE_CHATS = {"Group_ID": "Group_name", "Group_ID": "Group_name"}
