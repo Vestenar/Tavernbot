@@ -6,7 +6,7 @@ from telebot import TeleBot
 from datetime import datetime
 
 
-now_str = datetime.now().strftime('%m.%d.%Y года')
+now_str = datetime.now().strftime('%d.%m.%Y года')
 prognoz = f'Всем доброе утро! Сегодня {now_str}\nУтренняя сводка новостей от бармена:\n {getgodville.god_prognoz()}\n'
 coupon = getgodville.get_coupon()
 for chat_id in CHATS:
