@@ -69,7 +69,9 @@ class CounterJump:
         now = datetime.utcnow()
         final_step_time = f'{now.minute}:{now.second}.{str(now.microsecond)[:3]}'
         with open('timers.txt', 'a') as file:
-            print('Таймер: {:02d}:{:02d}:{:02d} сработал в {}'.format(*self.timedata, final_step_time), file=file)
+            print('Таймер: {:02d}:{:02d}:{:02d} сработал в {}: {}'.format(*self.timedata,
+                                                                          final_step_time,
+                                                                          self.counter_name), file=file)
         self._clear_trash()
 
     def _clear_trash(self):
