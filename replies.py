@@ -109,7 +109,7 @@ def reply(message):
                  r'(посоветуй|како|посмотреть).*(фильм|кино)',
         'obida': r'\bдура(к|цкий)|\bтуп(ой|ая)\b|\bидиот|глуп(ая|ый)|херов(ый|ая)|хренов(а|ая|ый)',
         'valutes': r'на биржах|курс(ы|ах) валют|что почем|куда вкладывать',
-        'player': r'расскажи о |что знаешь о |что слышал о |шепни о |какие слухи о ',
+        'player': r'(расскажи|что знаешь|что слышал|шепни|какие слухи) (о|про)',
         'recepie': r'(научи|дай|поделись|.*скажи).*(готовить|рецепт)',
         'football_euro': r'лиг.+ европы',
         'football_champ': r'лиг.+ чемпионов',
@@ -217,6 +217,7 @@ def reply(message):
 
     if 'себе' not in message and 'player' in found_phrases:
         from getgodville import god_info
+        message = message.replace(' про ', ' о ')
         playername = message.split(' о ')[-1].split(',')[0].split('?')[0].split('.')[0].split('!')[0].strip()
         return god_info(playername), 'text'
     if 'gorgosha' in found_phrases:

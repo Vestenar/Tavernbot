@@ -1,6 +1,7 @@
 import logging
 import random
 import sys
+import time
 
 from telebot import TeleBot, apihelper
 from datetime import datetime
@@ -22,7 +23,7 @@ warning_to = settings.WHOWARN
 # ------<<<------ Инициализация мини-игр ------>>>------
 xo_state = [' '] * 9
 xo_message_to_delete, xo_turn = (None, None)
-mouse_busy = False
+mouse_busy = time.time()
 
 bot = TeleBot(bot_token)
 
@@ -34,10 +35,11 @@ for ident in warning_to.keys():
         bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
 
 # ------<<<------ Перезапуск таймеров ------>>>------
-chatlist = [settings.ZST_ID]    # TODO не запускать до скрипта новостей
-user_timers = []
-for chat in chatlist:
-    jump_counter.autostart_timers(bot, chat, user_timers)
+if not settings.TEST_MODE:
+    chatlist = [settings.ZST_ID]    # TODO не запускать до скрипта новостей
+    user_timers = []
+    for chat in chatlist:
+        jump_counter.autostart_timers(bot, chat, user_timers)
 
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
@@ -151,6 +153,7 @@ def callback_buttons(call):
             updater = jump_counter.WarnUpdater(bot, call)
             updater.remove_reminder()
 
+        # ------<<<------ Описание из /skills ------>>>------
         elif call.data == 'story':
             bot.send_message(call.message.chat.id, 'Попросите бармена рассказать/поведать '
                                                    'историю/байку/анекдот или просто повеселить')
@@ -243,8 +246,8 @@ def callback_buttons(call):
 
         elif call.data == 'mouse_caught':
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
-            if not mouse_busy:
-                mouse_busy = True
+            if (time.time() - mouse_busy) > 5:
+                mouse_busy = time.time()
                 try:
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
@@ -256,12 +259,12 @@ def callback_buttons(call):
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
                 bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
-                mouse_busy = False
+                mouse_busy = time.time()
 
         elif call.data == 'rat_caught':
             # TODO реализовать удаление при успешном нажатии через сокеты (?)
-            if not mouse_busy:
-                mouse_busy = True
+            if (time.time() - mouse_busy) > 5:
+                mouse_busy = time.time()
                 try:
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
@@ -280,7 +283,7 @@ def callback_buttons(call):
                     bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса пожрала мышек у {username}, '
                                                            f'аж {mouse_eaten} за раз! Теперь на счету {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
-                mouse_busy = False
+                mouse_busy = time.time()
 
 
 @bot.message_handler(regexp=r'!log')
@@ -342,8 +345,10 @@ def reply_text(message):
 
 
 logging.basicConfig(filename="tavernerrors.log", format='%(asctime)s - %(message)s', level=logging.ERROR)
-try:
-    bot.polling(none_stop=True)
-except Exception:
-    with open(r'tavernerrors.log', 'a') as logfile:
-        logfile.write(f'An error occured: {format(sys.exc_info())}\n')
+while True:
+    try:
+        bot.polling(none_stop=True)
+    except Exception as error:
+        logging.error(error)
+        bot.stop_polling()
+        time.sleep(15)

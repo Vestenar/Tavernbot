@@ -16,10 +16,8 @@ def dialog_flow(message, token):
 
 
 if __name__ == '__main__':
-    import json
+    from settings import CHATBOT_TOKEN
     while True:
         msg = input()
-        with open('params.json') as init_file:
-            bot_params = json.loads(init_file.read())
-            chatbot_token = bot_params["chatbot_token"]
-        dialog_flow(msg, chatbot_token)
+        print(dialog_flow(msg, CHATBOT_TOKEN))
+

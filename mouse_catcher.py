@@ -14,11 +14,13 @@ chats = settings.MOUSE_CHATS
 delay_min = 20 * 60
 delay_max = 60 * 60
 ratio = 7
-# chats = [settings.MY_ID]
-# now = pytz.timezone('UTC')
-# delay_min = 5
-# delay_max = 6
-# ratio = 1
+time_sleep = 30
+if settings.TEST_MODE:
+    chats = [settings.MY_ID]
+    delay_min = 5
+    delay_max = 6
+    ratio = 9
+    time_sleep = 3
 
 
 def score_counter(chat_id, user_id, score):
@@ -73,14 +75,13 @@ def show_scores(chat_id):
 if __name__ == '__main__':
     while True:
         time.sleep(randint(delay_min, delay_max))
-        # utc_time = now.localize(datetime.utcnow())
         msk_zone = pytz.timezone('Europe/Moscow')
         now = datetime.now(tz=msk_zone)
         if 7 <= now.hour < 23:
             for chat in chats:
                 rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
                 mouse_appear(bot, chat, rnd_mouse)
-                time.sleep(30)
+                time.sleep(time_sleep)
 
     # print(show_scores(-1001320841683))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)

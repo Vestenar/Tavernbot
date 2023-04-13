@@ -370,7 +370,7 @@ def autostart_timers(bot, chat_id, user_timers):
 
     default_timers = []
     if chat_id in [ZST_ID]:
-        default_timers = ['доброданж,06,55,00', 'море,10,00,00', 'лаб. данж,12,01,12',
+        default_timers = ['лаб. данж,06,57,06', 'море,10,00,00', 'лаб. данж,12,01,12',
                           'лаб. данж,17,01,17', 'море,20,00,00', 'лаб. данж,22,01,22', 'данж,22,10,22']
     timers = default_timers + user_timers
     chat = namedtuple('chat', ['id', 'type'])
