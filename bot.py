@@ -35,11 +35,11 @@ for ident in warning_to.keys():
         bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
 
 # ------<<<------ Перезапуск таймеров ------>>>------
-if not settings.TEST_MODE:
-    chatlist = [settings.ZST_ID]    # TODO не запускать до скрипта новостей
-    user_timers = []
-    for chat in chatlist:
-        jump_counter.autostart_timers(bot, chat, user_timers)
+# if not settings.TEST_MODE:
+#     chatlist = [settings.ZST_ID]    # TODO не запускать до скрипта новостей
+#     user_timers = []
+#     for chat in chatlist:
+#         jump_counter.autostart_timers(bot, chat, user_timers)
 
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
@@ -257,7 +257,11 @@ def callback_buttons(call):
                 last_name = (' ' + user.last_name) if user.last_name else ''
                 username = first_name + last_name
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
-                bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}.')
+                if score % 111 == 0:
+                    bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
+                                                           f'популяции мышей полностью. Теперь на счету 0.')
+                else:
+                    bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
 
