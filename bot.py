@@ -14,6 +14,9 @@ import jump_counter
 import settings
 import mouse_catcher
 
+
+
+print('testing new branch')
 # ------<<<------ Инициализация ------>>>------
 bot_token = settings.BOT_TOKEN
 my_id = settings.MY_ID
