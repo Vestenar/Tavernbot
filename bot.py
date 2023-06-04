@@ -257,7 +257,7 @@ def callback_buttons(call):
                 last_name = (' ' + user.last_name) if user.last_name else ''
                 username = first_name + last_name
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
-                if score % 111 == 0:
+                if score % 111 == 0 or score % 100 == 0:
                     bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
                                                            f'популяции мышей полностью. Теперь на счету 0.')
                 else:
