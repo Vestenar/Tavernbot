@@ -68,22 +68,27 @@ def show_scores(chat_id):
     sorted_scores = sorted(scores, key=scores.get, reverse=True)
     for id in sorted_scores:
         name = user_list[id]
-        rating += f'{name}: {scores[id]}\n'
+        points = scores[id]
+        if points == 0:
+            continue
+        if points % 100 == 0 or points % 111 == 0:
+            points = 0
+        rating += f'{name}: {points}\n'
     return rating
 
 
 if __name__ == '__main__':
-    while True:
-        time.sleep(randint(delay_min, delay_max))
-        msk_zone = pytz.timezone('Europe/Moscow')
-        now = datetime.now(tz=msk_zone)
-        if 7 <= now.hour < 23:
-            for chat in chats:
-                rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
-                mouse_appear(bot, chat, rnd_mouse)
-                time.sleep(time_sleep)
+    # while True:
+    #     time.sleep(randint(delay_min, delay_max))
+    #     msk_zone = pytz.timezone('Europe/Moscow')
+    #     now = datetime.now(tz=msk_zone)
+    #     if 7 <= now.hour < 23:
+    #         for chat in chats:
+    #             rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
+    #             mouse_appear(bot, chat, rnd_mouse)
+    #             time.sleep(time_sleep)
 
-    # print(show_scores(-1001320841683))
+    print(show_scores(-1001320841683))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)
     # print(get_score(my_id, my_id))
     # save_user(123, 'name')
