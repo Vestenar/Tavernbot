@@ -14,8 +14,10 @@ def get_currencies():
     soup = BeautifulSoup(godcurs.text, 'lxml')
     kotirs = soup.find('div', {'class': 'rate clearfix'})
     currencies.append('1 босскоин 🧿:  ' + kotirs.contents[5].contents[0] + '💰')
-    currencies.append('1 кирпич 🧱:     ' + kotirs.contents[9].contents[0] + '💰')
-    currencies.append('1 инвайт 🔖:     ' + kotirs.contents[13].contents[0] + '💰')
+    # currencies.append('1 кирпич 🧱:     ' + kotirs.contents[9].contents[0] + '💰')
+    # currencies.append('1 инвайт 🔖:     ' + kotirs.contents[13].contents[0] + '💰')
+    currencies.append('1 инвайт 🔖:     ' + kotirs.contents[9].contents[0] + '💰')
+
     cbcurs = None
     godcurs = None
     soup = None
@@ -203,8 +205,10 @@ def get_promo():
 
 
 if __name__ == '__main__':
-    print(get_football('world'))
+    # print(get_football('world'))
     # print(get_football('euro'))
     # print(get_football('konf'))
     # print(get_football('champ'))
     # print(get_promo())
+    print(get_currencies())
+
