@@ -1,9 +1,20 @@
+import json
 from datetime import datetime
+from pprint import pprint
+
 from telebot import types
 from time import sleep
 from random import choice, randint
-from settings import DEN_ID, MY_ID, GORGONA_ID, ZST_ID
+from settings import DEN_ID, MY_ID, GORGONA_ID, ZST_ID, TEST_MODE
 delay = 1.5
+
+
+with open('params.json', 'r') as file:
+    bot_params = json.loads(file.read())
+    if not TEST_MODE:
+        chats = bot_params["mouse_hunt"]
+    else:
+        chats = bot_params["mouse_hunt_test"]
 
 
 def skills_menu(bot, message):
@@ -17,9 +28,11 @@ def skills_menu(bot, message):
     menu_7 = types.InlineKeyboardButton(text='винную карту', callback_data='menu_bar')
     menu_8 = types.InlineKeyboardButton(text='мини-игры', callback_data='games')
     menu_9 = types.InlineKeyboardButton(text='новости футбола', callback_data='football')
+    menu_10 = types.InlineKeyboardButton(text='личная напоминалка', callback_data='reminder')
     menu_close = types.InlineKeyboardButton(text='Закрыть меню', callback_data='closemenu')
     skill_menu.row(menu_1, menu_2)
     skill_menu.row(menu_3, menu_4)
+    skill_menu.row(menu_10)
     skill_menu.row(menu_5, menu_8)
     skill_menu.row(menu_9, menu_7)
     skill_menu.row(menu_6)
@@ -276,12 +289,14 @@ def xo_bot_move(state):
 def mouse_appear(bot, chat_id, rnd_mouse):
     mouse_menu = types.InlineKeyboardMarkup()
     mouse_button = types.InlineKeyboardButton
+    mouse_pic = chats[chat_id]['pics'][0]
+    rat_pic = chats[chat_id]['pics'][1]
     if rnd_mouse == 'mouse':
-        mouse_button = types.InlineKeyboardButton(text='🐁', callback_data='mouse_caught')
+        mouse_button = types.InlineKeyboardButton(text=mouse_pic, callback_data='mouse_caught')
     elif rnd_mouse == 'rat':
-        mouse_button = types.InlineKeyboardButton(text='🐀', callback_data='rat_caught')
+        mouse_button = types.InlineKeyboardButton(text=rat_pic, callback_data='rat_caught')
     mouse_menu.row(mouse_button)
-    mouse_message = bot.send_message(chat_id, 'Мышь! Мыыыышь!', reply_markup=mouse_menu)
+    mouse_message = bot.send_message(chat_id, f'Ловите! Что это? Скорее ловите!', reply_markup=mouse_menu)
     sleep(randint(15, 20))
     try:
         bot.delete_message(chat_id, mouse_message.id)

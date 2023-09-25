@@ -10,16 +10,21 @@ import json
 bot_token = settings.BOT_TOKEN
 bot = TeleBot(bot_token)
 my_id = settings.MY_ID
-chats = settings.MOUSE_CHATS
 delay_min = 20 * 60
 delay_max = 60 * 60
 ratio = 7
-time_sleep = 30
+time_sleep = 10
+
+with open('params.json', 'r') as file:
+    bot_params = json.loads(file.read())
+    chats = bot_params["mouse_hunt"]
+    test_chats = bot_params["mouse_hunt_test"]
+
 if settings.TEST_MODE:
-    chats = [settings.MY_ID]
+    chats = test_chats
     delay_min = 5
     delay_max = 6
-    ratio = 9
+    ratio = 2
     time_sleep = 3
 
 
@@ -57,6 +62,10 @@ def get_score(chat_id, user_id):
 
 
 def show_scores(chat_id):
+    chatid = str(chat_id)
+    mouse_name = chats[chatid]["names"][0]
+    rats_name = chats[chatid]["names"][1]
+
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())["mice_caught"]
     with open('users.json') as file:
@@ -64,8 +73,12 @@ def show_scores(chat_id):
     if str(chat_id) not in scores:
         return "В этом чате мышей не ловят"
     scores = scores[str(chat_id)]
-    rating = 'Рейтинг охотников на мышек в чате:\n'
+    rating = f'<code>Рейтинг охотников на {mouse_name} в чате:\n'
     sorted_scores = sorted(scores, key=scores.get, reverse=True)
+    total, total_rats = 0, 0
+    total = sum([int(i) for i in scores.values() if int(i) > 0])
+    total_rats = abs(sum([int(i) for i in scores.values() if int(i) < 0]))
+
     for id in sorted_scores:
         name = user_list[id]
         points = scores[id]
@@ -73,22 +86,30 @@ def show_scores(chat_id):
             continue
         if points % 100 == 0 or points % 111 == 0:
             points = 0
-        rating += f'{name}: {points}\n'
+        if len(name) > 15:
+            rating += name.split()[0] + '\n'
+            name = ' '.join(name.split()[1:])
+        if points > 0:
+            rating += f'{name:<15} {points:>4} {points/total:>6.2%}\n'
+        else:
+            rating += f'{name:<15} {points:>4}\n'
+    rating += f'{"—"*30}\nИТОГО: {total} {mouse_name}</code>'
     return rating
 
 
 if __name__ == '__main__':
+
     while True:
         time.sleep(randint(delay_min, delay_max))
         msk_zone = pytz.timezone('Europe/Moscow')
         now = datetime.now(tz=msk_zone)
         if 7 <= now.hour < 23:
-            for chat in chats:
+            for chat in chats.keys():
                 rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
                 mouse_appear(bot, chat, rnd_mouse)
                 time.sleep(time_sleep)
 
-    # print(show_scores(-1001320841683))
+    # print(show_scores(-1001295840958))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)
     # print(get_score(my_id, my_id))
     # save_user(123, 'name')

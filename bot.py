@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 import sys
@@ -94,7 +95,7 @@ def list_message(message):
 
 
 # ------<<<------ Отобразить менюшку таймеров ------>>>------
-@bot.message_handler(regexp=r'(дай|назначь|установи).* (время|таймер|напомин)|'
+@bot.message_handler(regexp=r'(дай|поставь|назначь|установи).* (время|таймер|напомин)|'
                             r'(назначь|напомни).* (данж|море|полигон|поход)')
 def dungeon(message):
     logging_messages(message)
@@ -115,7 +116,7 @@ def del_reminder(message):
 @bot.message_handler(commands=['scores'])
 def show_scores(message):
     table = mouse_catcher.show_scores(message.chat.id)
-    bot.send_message(message.chat.id, table)
+    bot.send_message(message.chat.id, table, parse_mode='html')
 
 
 # ------<<<------ Отобразить менюшку игр ------>>>------
@@ -185,6 +186,10 @@ def callback_buttons(call):
                                                    'получить таблицу актуального этапа. '
                                                    'Если в запросе указать интересующую группу (A, B, C, ...), '
                                                    'то будет показана только таблица группы.')
+        elif call.data == 'reminder':
+            bot.send_message(call.message.chat.id, 'Установите персональное напоминание в личку '
+                                                   'о предстоящем походе. Работает только для группы, '
+                                                   'в которой вызывается команда /reminder')
 
         elif call.data == 'menu_bar':
             from menu_games import bar_menu
@@ -247,7 +252,15 @@ def callback_buttons(call):
                 xo_message_to_delete = menu_games.cross_zeros(bot, call, xo_message_to_delete, xo_state)
 
         elif call.data == 'mouse_caught':
-            # TODO реализовать удаление при успешном нажатии через сокеты (?)
+            chat_id = str(call.message.chat.id)
+            with open('params.json', 'r') as file:
+                bot_params = json.loads(file.read())
+                if not settings.TEST_MODE:
+                    chats = bot_params["mouse_hunt"]
+                else:
+                    chats = bot_params["mouse_hunt_test"]
+            mouse_name = chats[chat_id]["names"][0]
+
             if (time.time() - mouse_busy) > 5:
                 mouse_busy = time.time()
                 try:
@@ -261,14 +274,24 @@ def callback_buttons(call):
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
                 if score % 111 == 0 or score % 100 == 0:
                     bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
-                                                           f'популяции мышей полностью. Теперь на счету 0.')
+                                                           f'популяции {mouse_name} полностью. Теперь на счету 0.')
                 else:
-                    bot.send_message(call.message.chat.id, f'Фух, поймали! Мышек на счету {username}: {score}.')
+                    bot.send_message(call.message.chat.id, f'Фух, поймали! На счету {username}: '
+                                                           f'{score} {mouse_name}.')
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
 
         elif call.data == 'rat_caught':
-            # TODO реализовать удаление при успешном нажатии через сокеты (?)
+            chat_id = str(call.message.chat.id)
+            with open('params.json', 'r') as file:
+                bot_params = json.loads(file.read())
+                if not settings.TEST_MODE:
+                    chats = bot_params["mouse_hunt"]
+                else:
+                    chats = bot_params["mouse_hunt_test"]
+            mouse_name = chats[chat_id]["names"][0]
+            rat_name = chats[chat_id]["names"][1]
+
             if (time.time() - mouse_busy) > 5:
                 mouse_busy = time.time()
                 try:
@@ -280,13 +303,15 @@ def callback_buttons(call):
                 last_name = (' ' + user.last_name) if user.last_name else ''
                 username = first_name + last_name
                 user_scores = mouse_catcher.get_score(call.message.chat.id, call.from_user.id)
-                mouse_eaten = random.randint(min(3, user_scores), min(10, user_scores))
+                if user_scores > 0:
+                    mouse_eaten = random.randint(min(3, user_scores), min(10, user_scores))
+                else: mouse_eaten = 1
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - mouse_eaten)
-                if not mouse_eaten:
-                    bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса очень хотела поживиться мышками '
-                                                           f'{username}, но ее кто-то опередил.')
+                if user_scores <= 0:
+                    bot.send_message(call.message.chat.id, f'Ух ты! Пойманная {rat_name} не нашла {mouse_name}, '
+                                                           f'поэтому поселилась у {username}.')
                 else:
-                    bot.send_message(call.message.chat.id, f'Упс! Пойманная крыса пожрала мышек у {username}, '
+                    bot.send_message(call.message.chat.id, f'Упс! Пойманная {rat_name} пожрала {mouse_name} у {username}, '
                                                            f'аж {mouse_eaten} за раз! Теперь на счету {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
@@ -320,8 +345,14 @@ def reload_modules(message):
         importlib.reload(menu_games)
         importlib.reload(timetojump)
         importlib.reload(jump_counter)
+        importlib.reload(mouse_catcher)
         bot.send_message(message.chat.id, 'Модули перегружены')
 
+
+@bot.message_handler(regexp=r'!chatid')
+def reload_modules(message):
+    if message.json['from']['id'] == my_id:
+        bot.send_message(message.chat.id, f'chat ID is: {message.chat.id}')
 
 @bot.message_handler(content_types=['text'])
 def reply_text(message):
