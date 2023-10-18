@@ -26,22 +26,23 @@ def get_currencies():
 
 
 def get_story():
-    url = 'http://lolstory.ru/story/'
+    url = 'https://lolstory.ru/story/'
     antimat = 'Возможна ненормативная лексика. ' \
               'Чтобы увидеть слово отключите цензор в низу страницы и обновите страницу. '
     MAXLEN = 1000
-    LAST_STORY = 16987
+    LAST_STORY = 53061
     for _ in range(10):
-        number = randint(1, LAST_STORY)
+        number = randint(20000, LAST_STORY)
         get_url = url + str(number)
         resp = requests.get(get_url)
         if resp.status_code != 200:
             return 'Устал я сегодня, да и память уже не та'
 
         soup = BeautifulSoup(resp.content, 'lxml')
-        story = soup.find('div', {'class': 'post-text'})
-        if story and len(story.text) <= MAXLEN:
-            return story.text.strip().replace('\n\r', '\n').replace(antimat, '')
+        # story = soup.find('div', {'class': 'post-text'})
+        story = soup.select_one("span[itemprop*=articleBody]").contents[0]
+        if story and len(story) <= MAXLEN:
+            return story.strip().replace('\n\r', '\n').replace(antimat, '')
         soup = None
         story = None
     return 'Что-то в памяти всплывают только длинные истории, не хочется вас ими утруждать'
