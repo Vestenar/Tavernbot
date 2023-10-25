@@ -126,6 +126,13 @@ def dungeon(message):
     menu_games.games_menu(bot, message)
 
 
+# ------<<<------ Отобразить менюшку вызова ------>>>------
+@bot.message_handler(regexp=r'(!зови|ал(а|я)рм)|!!!')
+def alert(message):
+    logging_messages(message)
+    menu_games.alert_menu(bot, message)
+
+
 # ------<<<------ Отработка команд из всех менюшек ------>>>------
 @bot.callback_query_handler(func=lambda call: True)
 def callback_buttons(call):
@@ -315,6 +322,11 @@ def callback_buttons(call):
                                                            f'аж {mouse_eaten} за раз! Теперь на счету {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
+
+        elif call.data == 'alert_vest':
+            bot.send_message(call.message.chat.id, f'@vestenar', parse_mode='html')
+        elif call.data == 'alert_rose':
+            bot.send_message(call.message.chat.id, '@i_potterman', parse_mode='html')
 
 
 @bot.message_handler(regexp=r'!log')

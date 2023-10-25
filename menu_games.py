@@ -106,6 +106,17 @@ def reminder_menu(bot, message):
     bot.send_message(message.chat.id, 'Напомнить о походе ', reply_markup=remind_menu)
 
 
+def alert_menu(bot, message):
+    alert_inline_menu = types.InlineKeyboardMarkup()
+    call_vest = types.InlineKeyboardButton(text='ВЕСТ!!!', callback_data='alert_vest')
+    call_rose = types.InlineKeyboardButton(text='РОУЗ!!!', callback_data='alert_rose')
+    menu_close = types.InlineKeyboardButton(text='Закрыть меню', callback_data='closemenu')
+    alert_inline_menu.row(call_vest, call_rose)
+    alert_inline_menu.row(menu_close)
+    bot.send_message(message.chat.id, 'Срочно вызвать:', reply_markup=alert_inline_menu)
+
+
+
 def bar_menu(bot, call):
     bar = types.InlineKeyboardMarkup()
     drink_1 = types.InlineKeyboardButton(text='Пиво', callback_data='пиво')

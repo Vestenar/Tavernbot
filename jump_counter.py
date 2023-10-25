@@ -6,6 +6,8 @@ from datetime import datetime
 from telebot import types, apihelper
 from threading import Thread
 
+import menu_games
+
 
 class CounterJump:
     def __init__(self, bot, call, event_name=None, event_time=None, pin_on=True):
@@ -73,6 +75,7 @@ class CounterJump:
                                                                           final_step_time,
                                                                           self.counter_name), file=file)
         self._clear_trash()
+        menu_games.alert_menu(self.bot, self.call.message)
 
     def _clear_trash(self):
         # TODO check if deleted messages unpins
