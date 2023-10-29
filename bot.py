@@ -324,9 +324,17 @@ def callback_buttons(call):
                 mouse_busy = time.time()
 
         elif call.data == 'alert_vest':
-            bot.send_message(call.message.chat.id, f'@vestenar', parse_mode='html')
+            user = call.from_user
+            first_name = user.first_name if user.first_name else ''
+            last_name = (' ' + user.last_name) if user.last_name else ''
+            username = first_name + last_name
+            bot.send_message(call.message.chat.id, f'@vestenar, тебя зовет {username}', parse_mode='html')
         elif call.data == 'alert_rose':
-            bot.send_message(call.message.chat.id, '@i_potterman', parse_mode='html')
+            user = call.from_user
+            first_name = user.first_name if user.first_name else ''
+            last_name = (' ' + user.last_name) if user.last_name else ''
+            username = first_name + last_name
+            bot.send_message(call.message.chat.id, f'@i_potterman, тебя зовет {username}', parse_mode='html')
 
 
 @bot.message_handler(regexp=r'!log')
