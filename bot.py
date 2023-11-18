@@ -3,8 +3,7 @@ import logging
 import random
 import sys
 import time
-
-
+from pprint import pprint
 
 from telebot import TeleBot, apihelper
 from datetime import datetime
@@ -259,6 +258,7 @@ def callback_buttons(call):
                 xo_message_to_delete = menu_games.cross_zeros(bot, call, xo_message_to_delete, xo_state)
 
         elif call.data == 'mouse_caught':
+            pressed = time.time()
             chat_id = str(call.message.chat.id)
             with open('params.json', 'r') as file:
                 bot_params = json.loads(file.read())
@@ -267,6 +267,7 @@ def callback_buttons(call):
                 else:
                     chats = bot_params["mouse_hunt_test"]
             mouse_name = chats[chat_id]["names"][0]
+            rat_name = chats[chat_id]["names"][1]
 
             if (time.time() - mouse_busy) > 5:
                 mouse_busy = time.time()
@@ -274,6 +275,7 @@ def callback_buttons(call):
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
                     pass
+                reaction = pressed - call.message.date
                 user = call.from_user
                 first_name = user.first_name if user.first_name else ''
                 last_name = (' ' + user.last_name) if user.last_name else ''
@@ -283,8 +285,13 @@ def callback_buttons(call):
                     bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
                                                            f'популяции {mouse_name} полностью. Теперь на счету 0.')
                 else:
-                    bot.send_message(call.message.chat.id, f'Фух, поймали! На счету {username}: '
-                                                           f'{score} {mouse_name}.')
+                    if score >= 0:
+                        bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction:.2} сек! '
+                                                                    f'На счету {username}: {score} {mouse_name}.')
+                    else:
+                        bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction:.2} сек! Одна {rat_name}'
+                                                               f' лопнула и теперь На счету {username}: {abs(score)} .')
+
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
 
@@ -316,10 +323,12 @@ def callback_buttons(call):
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - mouse_eaten)
                 if user_scores <= 0:
                     bot.send_message(call.message.chat.id, f'Ух ты! Пойманная {rat_name} не нашла {mouse_name}, '
-                                                           f'поэтому поселилась у {username}.')
+                                                           f'поэтому поселилась у {username}, '
+                                                           f'и теперь их {abs(user_scores) + 1}.')
                 else:
-                    bot.send_message(call.message.chat.id, f'Упс! Пойманная {rat_name} пожрала {mouse_name} у {username}, '
-                                                           f'аж {mouse_eaten} за раз! Теперь на счету {score}.')
+                    bot.send_message(call.message.chat.id, f'Упс! Пойманная {rat_name} пожрала {mouse_name} '
+                                                           f'у {username}, аж {mouse_eaten} за раз! '
+                                                           f'Теперь на счету {score}.')
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
 

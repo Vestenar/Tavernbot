@@ -24,8 +24,8 @@ if settings.TEST_MODE:
     chats = test_chats
     delay_min = 5
     delay_max = 6
-    ratio = 2
-    time_sleep = 3
+    ratio = 5
+    time_sleep = 1
 
 
 def score_counter(chat_id, user_id, score):
