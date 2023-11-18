@@ -275,7 +275,7 @@ def callback_buttons(call):
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
                     pass
-                reaction = pressed - call.message.date
+                reaction = round(pressed - call.message.date, 2)
                 user = call.from_user
                 first_name = user.first_name if user.first_name else ''
                 last_name = (' ' + user.last_name) if user.last_name else ''
@@ -286,10 +286,10 @@ def callback_buttons(call):
                                                            f'популяции {mouse_name} полностью. Теперь на счету 0.')
                 else:
                     if score >= 0:
-                        bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction:.2} сек! '
+                        bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction} сек! '
                                                                     f'На счету {username}: {score} {mouse_name}.')
                     else:
-                        bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction:.2} сек! Одна {rat_name}'
+                        bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction} сек! Одна {rat_name}'
                                                                f' лопнула и теперь На счету {username}: {abs(score)} .')
 
                 mouse_catcher.save_user(call.from_user.id, username)
