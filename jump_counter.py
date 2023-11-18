@@ -2,7 +2,7 @@ import json
 import time
 from random import randint, choice
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from telebot import types, apihelper
 from threading import Thread
 
@@ -94,31 +94,10 @@ class CounterJump:
             except:
                 pass
 
-    def _resolve_time(self):
+    def _thread_timer(self):
         """
-        устанавливает время для выбранного стандартного времени
+        запускает таймер для выбранного стандартного времени в отдельном потоке
         """
-        # self.timedata[0] = self.timer_hh_message
-        #
-        # if self.timer_hh_message == 6:
-        #     self.timedata[1], self.timedata[2] = (55, 0)
-        #     self.counter_name = 'гильдпохода в доброданж'
-        # elif self.timer_hh_message == 10:
-        #     self.timedata[1], self.timedata[2] = (0, 0)
-        #     self.counter_name = 'гильдпохода в море'
-        # if self.timer_hh_message == 12:
-        #     self.timedata[1], self.timedata[2] = (1, 12)
-        # elif self.timer_hh_message == 17:
-        #     self.timedata[1], self.timedata[2] = (1, 17)
-        # elif self.timer_hh_message == 20:
-        #     self.timedata[1], self.timedata[2] = (0, 0)
-        #     self.counter_name = 'гильдпохода в море'
-        # elif self.timer_hh_message == 22:
-        #     self.timedata[1], self.timedata[2] = (10, 22)
-        #     self.counter_name = 'гильдпохода в зубастый данж'
-        # elif self.timer_hh_message == 27:
-        #     self.timedata[0] = 22
-        #     self.timedata[1], self.timedata[2], self.timeset = self._check_22_time()
         wait = Thread(target=self._get_delta, args=self.timedata)
         wait.start()
 
@@ -243,6 +222,7 @@ class CounterJump:
         target_time = datetime(now.year, now.month, now.day, ((hh + 21) % 24), mm, ss, tzinfo=utc)
         time_delta = (target_time - now)
         self.timedelta = time_delta.seconds
+        print(self.timedelta)
         if refresh:
             return
         if self.pin_on:
@@ -278,7 +258,7 @@ class CounterJump:
         """
         self._hide_menu()
         if self.counter_name:
-            self._resolve_time()
+            self._thread_timer()
         else:
             sent = self.send(self.chat_id, 'Установите время для похода в формате <b>ЧЧ:ММ:[СС]</b> [назначение] в '
                                            'Reply на это сообщение\n<i>(указаное внутри [ ] не обязательно)</i>',
@@ -294,6 +274,12 @@ class CounterJump:
         self.counter_name = 'экстренного похода '
         self.timer_done = self.send(self.chat_id, f'Побежали в данжик через {ss} секунд')
         self._pinmessage()
+
+        utc = pytz.timezone('UTC')
+        now = utc.localize(datetime.utcnow())
+        target_time = now + timedelta(seconds=ss)
+        self.timedata = [(target_time.hour + 27) % 24, target_time.minute, target_time.second]
+        # target_time = datetime(now.year, now.month, now.day, ((hh + 21) % 24), mm, ss, tzinfo=utc)
         self._countdown()
 
 
