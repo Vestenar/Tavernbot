@@ -358,7 +358,7 @@ def callback_buttons(call):
                 brevno_id =None
 
             elif 'temn' in call.data:
-                brevno_name = 'i_potterman'
+                brevno_name = 'kosa_kosya'
                 brevno_id =None
 
             if len(last_call) < 4:
