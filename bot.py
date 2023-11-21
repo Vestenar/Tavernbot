@@ -361,10 +361,13 @@ def callback_buttons(call):
                 brevno_name = 'kosa_kosya'
                 brevno_id =None
 
-            if len(last_call) < 4:
-                bot.send_message(call.message.chat.id, f'@{brevno_name}, тебя зовет {username}', parse_mode='html')
+            if len(last_call) < 6:
+                rest = 5 - len(last_call)
+                bot.send_message(call.message.chat.id, f'@{brevno_name}, тебя зовет {username}. <i>ост.{rest}</i>',
+                                 parse_mode='html')
                 if brevno_id is not None:
                     bot.send_message(brevno_id, f'@{brevno_name}, тебя зовет {username}')
+
 
 
 @bot.message_handler(regexp=r'!log')
