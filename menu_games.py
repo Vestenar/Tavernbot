@@ -115,7 +115,8 @@ def alert_menu(bot, message):
     alert_inline_menu.row(call_vest, call_rose)
     alert_inline_menu.row(call_temn)
     alert_inline_menu.row(menu_close)
-    bot.send_message(message.chat.id, 'Срочно вызвать:', reply_markup=alert_inline_menu)
+    if message.chat.id == ZST_ID:
+        bot.send_message(message.chat.id, 'Срочно вызвать:', reply_markup=alert_inline_menu)
 
 
 
