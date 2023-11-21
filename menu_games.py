@@ -110,8 +110,10 @@ def alert_menu(bot, message):
     alert_inline_menu = types.InlineKeyboardMarkup()
     call_vest = types.InlineKeyboardButton(text='ВЕСТ!!!', callback_data='alert_vest')
     call_rose = types.InlineKeyboardButton(text='РОУЗ!!!', callback_data='alert_rose')
+    call_temn = types.InlineKeyboardButton(text='ТАННА!!!', callback_data='alert_temn')
     menu_close = types.InlineKeyboardButton(text='Закрыть меню', callback_data='closemenu')
     alert_inline_menu.row(call_vest, call_rose)
+    alert_inline_menu.row(call_temn)
     alert_inline_menu.row(menu_close)
     bot.send_message(message.chat.id, 'Срочно вызвать:', reply_markup=alert_inline_menu)
 

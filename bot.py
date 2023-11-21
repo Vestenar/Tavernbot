@@ -26,6 +26,7 @@ warning_to = settings.WHOWARN
 xo_state = [' '] * 9
 xo_message_to_delete, xo_turn = (None, None)
 mouse_busy = time.time()
+last_call = [0.0]
 
 bot = TeleBot(bot_token)
 
@@ -137,6 +138,8 @@ def alert(message):
 def callback_buttons(call):
     global xo_message_to_delete, xo_turn, xo_state
     global mouse_busy
+    global last_call
+    raschlenenka = True
     if call.message:
 
         if call.data.startswith('прыг'):
@@ -270,12 +273,15 @@ def callback_buttons(call):
             rat_name = chats[chat_id]["names"][1]
 
             if (time.time() - mouse_busy) > 5:
-                mouse_busy = time.time()
+                if not raschlenenka:
+                    mouse_busy = time.time()
                 try:
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
                     pass
                 reaction = round(pressed - call.message.date, 2)
+                if reaction > 30:
+                    reaction = '+0.1'
                 user = call.from_user
                 first_name = user.first_name if user.first_name else ''
                 last_name = (' ' + user.last_name) if user.last_name else ''
@@ -293,7 +299,8 @@ def callback_buttons(call):
                                                                f' лопнула и теперь На счету {username}: {abs(score)} .')
 
                 mouse_catcher.save_user(call.from_user.id, username)
-                mouse_busy = time.time()
+                if not raschlenenka:
+                    mouse_busy = time.time()
 
         elif call.data == 'rat_caught':
             chat_id = str(call.message.chat.id)
@@ -332,18 +339,32 @@ def callback_buttons(call):
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
 
-        elif call.data == 'alert_vest':
+        if call.data.startswith('alert'):
+            now = time.time()
+            last_call = list(filter(lambda x: x + 10 > now, last_call))
+            last_call.append(now)
+            print(last_call)
             user = call.from_user
             first_name = user.first_name if user.first_name else ''
             last_name = (' ' + user.last_name) if user.last_name else ''
             username = first_name + last_name
-            bot.send_message(call.message.chat.id, f'@vestenar, тебя зовет {username}', parse_mode='html')
-        elif call.data == 'alert_rose':
-            user = call.from_user
-            first_name = user.first_name if user.first_name else ''
-            last_name = (' ' + user.last_name) if user.last_name else ''
-            username = first_name + last_name
-            bot.send_message(call.message.chat.id, f'@i_potterman, тебя зовет {username}', parse_mode='html')
+
+            if 'vest' in call.data:
+                brevno_name = 'vestenar'
+                brevno_id = settings.MY_ID
+
+            elif 'rose' in call.data:
+                brevno_name = 'i_potterman'
+                brevno_id =None
+
+            elif 'temn' in call.data:
+                brevno_name = 'i_potterman'
+                brevno_id =None
+
+            if len(last_call) < 4:
+                bot.send_message(call.message.chat.id, f'@{brevno_name}, тебя зовет {username}', parse_mode='html')
+                if brevno_id is not None:
+                    bot.send_message(brevno_id, f'@{brevno_name}, тебя зовет {username}')
 
 
 @bot.message_handler(regexp=r'!log')
