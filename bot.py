@@ -6,7 +6,7 @@ import time
 from pprint import pprint
 
 from telebot import TeleBot, apihelper
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import choice
 import getinfo
 import replies
@@ -21,28 +21,25 @@ bot_token = settings.BOT_TOKEN
 my_id = settings.MY_ID
 warning_to = settings.WHOWARN
 
-
 # ------<<<------ Инициализация мини-игр ------>>>------
 xo_state = [' '] * 9
 xo_message_to_delete, xo_turn = (None, None)
 mouse_busy = time.time()
 last_call = [0.0]
 
+raschlenenka_cost = 50
+raschlenenka_off_cost = 5
+shower_cost = 20
+
 bot = TeleBot(bot_token)
 
 # ------<<<------ Оповещения о перезапуске ------>>>------
 for ident in warning_to.keys():
-    try:
-        bot.send_message(ident, 'Я перезапущен, таймеры сброшены')
-    except apihelper.ApiTelegramException:
-        bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
-
-# ------<<<------ Перезапуск таймеров ------>>>------
-# if not settings.TEST_MODE:
-#     chatlist = [settings.ZST_ID]    # TODO не запускать до скрипта новостей
-#     user_timers = []
-#     for chat in chatlist:
-#         jump_counter.autostart_timers(bot, chat, user_timers)
+    if not settings.TEST_MODE:
+        try:
+            bot.send_message(ident, 'Я перезапущен, таймеры сброшены')
+        except apihelper.ApiTelegramException:
+            bot.send_message(my_id, f'{ident} заблокировал личные сообщения бота')
 
 
 # ------<<<------ Логирование сообщений ------>>>------     # TODO переделать с использованием logging(info)
@@ -119,6 +116,11 @@ def show_scores(message):
     bot.send_message(message.chat.id, table, parse_mode='html')
 
 
+@bot.message_handler(commands=['shop'])
+def show_shop(message):
+    menu_games.shop_menu(bot, message)
+
+
 # ------<<<------ Отобразить менюшку игр ------>>>------
 @bot.message_handler(regexp=r'(поиграем|сыграем|играть)')
 def dungeon(message):
@@ -139,8 +141,14 @@ def callback_buttons(call):
     global xo_message_to_delete, xo_turn, xo_state
     global mouse_busy
     global last_call
-    raschlenenka = True
+
     if call.message:
+
+        user = call.from_user
+        first_name = user.first_name if user.first_name else ''
+        last_name = (' ' + user.last_name) if user.last_name else ''
+        username = first_name + last_name
+        chats, raschlenenka, raschlenenka_till, liven = mouse_catcher.get_hunt_params()
 
         if call.data.startswith('прыг'):
             _, event, *event_time = call.data.split(',')
@@ -263,14 +271,14 @@ def callback_buttons(call):
         elif call.data == 'mouse_caught':
             pressed = time.time()
             chat_id = str(call.message.chat.id)
-            with open('params.json', 'r') as file:
-                bot_params = json.loads(file.read())
-                if not settings.TEST_MODE:
-                    chats = bot_params["mouse_hunt"]
-                else:
-                    chats = bot_params["mouse_hunt_test"]
             mouse_name = chats[chat_id]["names"][0]
             rat_name = chats[chat_id]["names"][1]
+            if time.time() > raschlenenka_till and raschlenenka:
+                raschlenenka = False
+                mouse_catcher.set_raschlenenka(False)
+                for chat in chats.keys():
+                    bot.send_message(chat, f'Ну вот и все. Оплаченное время веселья закончилось, '
+                                           f'больше {mouse_name} рвать нельзя. Продлевать будете?')
 
             if (time.time() - mouse_busy) > 5:
                 if not raschlenenka:
@@ -282,10 +290,7 @@ def callback_buttons(call):
                 reaction = round(pressed - call.message.date, 2)
                 if reaction > 30:
                     reaction = '+0.1'
-                user = call.from_user
-                first_name = user.first_name if user.first_name else ''
-                last_name = (' ' + user.last_name) if user.last_name else ''
-                username = first_name + last_name
+
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
                 if score % 111 == 0 or score % 100 == 0:
                     bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
@@ -293,7 +298,7 @@ def callback_buttons(call):
                 else:
                     if score >= 0:
                         bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction} сек! '
-                                                                    f'На счету {username}: {score} {mouse_name}.')
+                                                               f'На счету {username}: {score} {mouse_name}.')
                     else:
                         bot.send_message(call.message.chat.id, f'Фух, поймали за {reaction} сек! Одна {rat_name}'
                                                                f' лопнула и теперь На счету {username}: {abs(score)} .')
@@ -304,12 +309,6 @@ def callback_buttons(call):
 
         elif call.data == 'rat_caught':
             chat_id = str(call.message.chat.id)
-            with open('params.json', 'r') as file:
-                bot_params = json.loads(file.read())
-                if not settings.TEST_MODE:
-                    chats = bot_params["mouse_hunt"]
-                else:
-                    chats = bot_params["mouse_hunt_test"]
             mouse_name = chats[chat_id]["names"][0]
             rat_name = chats[chat_id]["names"][1]
 
@@ -319,14 +318,12 @@ def callback_buttons(call):
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
                     pass
-                user = call.from_user
-                first_name = user.first_name if user.first_name else ''
-                last_name = (' ' + user.last_name) if user.last_name else ''
-                username = first_name + last_name
+
                 user_scores = mouse_catcher.get_score(call.message.chat.id, call.from_user.id)
                 if user_scores > 0:
                     mouse_eaten = random.randint(min(3, user_scores), min(10, user_scores))
-                else: mouse_eaten = 1
+                else:
+                    mouse_eaten = 1
                 score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - mouse_eaten)
                 if user_scores <= 0:
                     bot.send_message(call.message.chat.id, f'Ух ты! Пойманная {rat_name} не нашла {mouse_name}, '
@@ -339,11 +336,49 @@ def callback_buttons(call):
                 mouse_catcher.save_user(call.from_user.id, username)
                 mouse_busy = time.time()
 
+        if call.data.startswith('расчлененка'):
+            chat_id = str(call.message.chat.id)
+            user_scores = mouse_catcher.get_score(chat_id, call.from_user.id)
+            if call.data.endswith('вкл'):
+                if user_scores >= raschlenenka_cost:
+                    mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - raschlenenka_cost)
+                    raschlenenka = True
+
+                    for chat in chats.keys():
+                        chat_mouse_name = chats[chat]["names"][0]
+                        bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
+                                               f'Теперь {chat_mouse_name} временно можно рвать на части!')
+                else:
+                    bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
+
+            elif call.data.endswith('откл'):
+                raschlenenka = False
+                if user_scores >= raschlenenka_off_cost:
+                    mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - raschlenenka_off_cost)
+                    for chat in chats.keys():
+                        chat_mouse_name = chats[chat]["names"][0]
+                        bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
+                                               f'Теперь {chat_mouse_name} снова рвать нельзя!')
+                else:
+                    bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
+            mouse_catcher.set_raschlenenka(raschlenenka)
+
+        if call.data == 'мышепад':
+            if user_scores >= shower_cost:
+                mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - shower_cost)
+                for chat in chats.keys():
+                    mouse_catcher.set_shower(True)
+                    chat_mouse_name = chats[chat]["names"][0]
+                    bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
+                                           f'В некоторых чатах включен дождик, ловите больше {chat_mouse_name}!')
+            else:
+                bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
+            mouse_catcher.start_mouse_shower()
+
         if call.data.startswith('alert'):
             now = time.time()
             last_call = list(filter(lambda x: x + 10 > now, last_call))
             last_call.append(now)
-            print(last_call)
             user = call.from_user
             first_name = user.first_name if user.first_name else ''
             last_name = (' ' + user.last_name) if user.last_name else ''
@@ -355,11 +390,11 @@ def callback_buttons(call):
 
             elif 'rose' in call.data:
                 brevno_name = 'i_potterman'
-                brevno_id =None
+                brevno_id = None
 
             elif 'temn' in call.data:
                 brevno_name = 'kosa_kosya'
-                brevno_id =None
+                brevno_id = None
 
             if len(last_call) < 6:
                 rest = 5 - len(last_call)
@@ -367,7 +402,6 @@ def callback_buttons(call):
                                  parse_mode='html')
                 if brevno_id is not None:
                     bot.send_message(brevno_id, f'@{brevno_name}, тебя зовет {username}')
-
 
 
 @bot.message_handler(regexp=r'!log')
@@ -406,6 +440,7 @@ def reload_modules(message):
 def reload_modules(message):
     if message.json['from']['id'] == my_id:
         bot.send_message(message.chat.id, f'chat ID is: {message.chat.id}')
+
 
 @bot.message_handler(content_types=['text'])
 def reply_text(message):

@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 import pytz
 from telebot import TeleBot
@@ -17,14 +18,17 @@ time_sleep = 10
 
 with open('params.json', 'r') as file:
     bot_params = json.loads(file.read())
-    chats = bot_params["mouse_hunt"]
-    test_chats = bot_params["mouse_hunt_test"]
+    chats = bot_params["mouse_hunt"]["groups"]
+    # test_chats = bot_params["mouse_hunt_test"]["groups"]
+    # test_chats = {"-1001295840958": ""}
+    test_chats = {"297112989": ""}
+    test_chats.update({'297112989': {}, '297112989': {}})
 
 if settings.TEST_MODE:
     chats = test_chats
-    delay_min = 5
-    delay_max = 6
-    ratio = 5
+    delay_min = 1
+    delay_max = 1
+    ratio = 8
     time_sleep = 1
 
 
@@ -62,10 +66,15 @@ def get_score(chat_id, user_id):
 
 
 def show_scores(chat_id):
+    with open('params.json', 'r') as file:
+        bot_params = json.loads(file.read())
+    if not settings.TEST_MODE:
+        chats = bot_params["mouse_hunt"]["groups"]
+    else:
+        chats = bot_params["mouse_hunt_test"]["groups"]
     chatid = str(chat_id)
     mouse_name = chats[chatid]["names"][0]
     rats_name = chats[chatid]["names"][1]
-
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())["mice_caught"]
     with open('users.json') as file:
@@ -75,9 +84,8 @@ def show_scores(chat_id):
     scores = scores[str(chat_id)]
     rating = f'<code>Рейтинг охотников на {mouse_name} в чате:\n'
     sorted_scores = sorted(scores, key=scores.get, reverse=True)
-    total, total_rats = 0, 0
     total = sum([int(i) for i in scores.values() if int(i) > 0])
-    total_rats = abs(sum([int(i) for i in scores.values() if int(i) < 0]))
+    # total_rats = abs(sum([int(i) for i in scores.values() if int(i) < 0]))
 
     for id in sorted_scores:
         name = user_list[id]
@@ -97,19 +105,76 @@ def show_scores(chat_id):
     return rating
 
 
-if __name__ == '__main__':
+def set_raschlenenka(raschlenenka):
+    with open('params.json', 'r') as file:
+        bot_params = json.loads(file.read())
+        if not settings.TEST_MODE:
+            bot_params["mouse_hunt"]["raschlenenka"][0] = raschlenenka
+            bot_params["mouse_hunt"]["raschlenenka"][1] = time.time() + 24 * 3600.0 - 300
+        else:
+            bot_params["mouse_hunt_test"]["raschlenenka"][0] = raschlenenka
+            bot_params["mouse_hunt_test"]["raschlenenka"][1] = time.time() + 60
+    with open('params.json', 'w') as file:
+        file.write(json.dumps(bot_params))
 
+
+def set_shower(state):
+    with open('params.json', 'r') as file:
+        bot_params = json.loads(file.read())
+        if not settings.TEST_MODE:
+            bot_params["mouse_hunt"]["liven"] = state
+        else:
+            bot_params["mouse_hunt_test"]["liven"] = state
+    with open('params.json', 'w') as file:
+        file.write(json.dumps(bot_params))
+
+def get_hunt_params():
+    with open('params.json', 'r') as file:
+        bot_params = json.loads(file.read())
+    if not settings.TEST_MODE:
+        chats = bot_params["mouse_hunt"]["groups"]
+        raschlenenka = bot_params["mouse_hunt"]["raschlenenka"][0]
+        raschlenenka_till = bot_params["mouse_hunt"]["raschlenenka"][1]
+        liven = bot_params["mouse_hunt"]["liven"]
+
+    else:
+        chats = bot_params["mouse_hunt_test"]["groups"]
+        raschlenenka = bot_params["mouse_hunt_test"]["raschlenenka"][0]
+        raschlenenka_till = bot_params["mouse_hunt_test"]["raschlenenka"][1]
+        liven = bot_params["mouse_hunt_test"]["liven"]
+    return chats, raschlenenka, raschlenenka_till, liven
+
+
+def start_mouse_shower():
+    N = 30
+    while N > 0:
+        for chat in random.choices(chats, k=2):
+            rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
+            mouse_appear(bot, chat, rnd_mouse)
+            time.sleep(30)
+        N -= 1
+
+
+if __name__ == '__main__':
+    _, _, _, shower = get_hunt_params()
     while True:
-        time.sleep(randint(delay_min, delay_max))
         msk_zone = pytz.timezone('Europe/Moscow')
         now = datetime.now(tz=msk_zone)
         if 7 <= now.hour < 23:
+            if shower:
+                start_mouse_shower()
+                set_shower(False)
             for chat in chats.keys():
                 rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
                 mouse_appear(bot, chat, rnd_mouse)
                 time.sleep(time_sleep)
+        time.sleep(randint(delay_min, delay_max))
 
-    # print(show_scores(-1001295840958))
+    # with open('params.json', 'r') as file:
+    #     bot_params = json.loads(file.read())
+    #     chats = bot_params["mouse_hunt"]["groups"]
+    # for chat in chats:
+    #     print(show_scores(chat))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)
     # print(get_score(my_id, my_id))
     # save_user(123, 'name')

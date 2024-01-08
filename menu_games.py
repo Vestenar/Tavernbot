@@ -12,9 +12,9 @@ delay = 1.5
 with open('params.json', 'r') as file:
     bot_params = json.loads(file.read())
     if not TEST_MODE:
-        chats = bot_params["mouse_hunt"]
+        chats = bot_params["mouse_hunt"]["groups"]
     else:
-        chats = bot_params["mouse_hunt_test"]
+        chats = bot_params["mouse_hunt_test"]["groups"]
 
 
 def skills_menu(bot, message):
@@ -138,6 +138,18 @@ def bar_menu(bot, call):
                           'поэтому почти всегда льет что попало',
                           call.message.chat.id, call.message.message_id, reply_markup=bar)
 
+
+def shop_menu(bot, message):
+    shop = types.InlineKeyboardMarkup()
+    lot1 = types.InlineKeyboardButton(text='Включить разрывание (50 у.е.) ', callback_data='расчлененка_вкл')
+    lot2 = types.InlineKeyboardButton(text='Выключить разрывание (5 у.е.)', callback_data='расчлененка_откл')
+    lot3 = types.InlineKeyboardButton(text='Включить ливень (20 у.е.)', callback_data='мышепад')
+    menu_close = types.InlineKeyboardButton(text='Закрыть меню (Бесплатно)', callback_data='closemenu')
+    shop.row(lot1)
+    shop.row(lot2)
+    shop.row(lot3)
+    shop.row(menu_close)
+    bot.send_message(message.chat.id, 'Доступны для покупки:', reply_markup=shop)
 
 def where_is_water(bot, chat_id, gamer):
     story = ['Однажды на Таверну напал злой Бодун!',
