@@ -19,10 +19,10 @@ time_sleep = 10
 with open('params.json', 'r') as file:
     bot_params = json.loads(file.read())
     chats = bot_params["mouse_hunt"]["groups"]
-    # test_chats = bot_params["mouse_hunt_test"]["groups"]
+    test_chats = bot_params["mouse_hunt_test"]["groups"]
     # test_chats = {"-1001295840958": ""}
-    test_chats = {"297112989": ""}
-    test_chats.update({'297112989': {}, '297112989': {}})
+    # test_chats = {"297112989": ""}
+    # test_chats.update({'297112989': {}, '297112989': {}})
 
 if settings.TEST_MODE:
     chats = test_chats
@@ -122,9 +122,9 @@ def set_shower(state):
     with open('params.json', 'r') as file:
         bot_params = json.loads(file.read())
         if not settings.TEST_MODE:
-            bot_params["mouse_hunt"]["liven"] = state
+            bot_params["mouse_hunt"]["liven"][0] = state
         else:
-            bot_params["mouse_hunt_test"]["liven"] = state
+            bot_params["mouse_hunt_test"]["liven"][0] = state
     with open('params.json', 'w') as file:
         file.write(json.dumps(bot_params))
 
@@ -135,40 +135,49 @@ def get_hunt_params():
         chats = bot_params["mouse_hunt"]["groups"]
         raschlenenka = bot_params["mouse_hunt"]["raschlenenka"][0]
         raschlenenka_till = bot_params["mouse_hunt"]["raschlenenka"][1]
-        liven = bot_params["mouse_hunt"]["liven"]
+        liven = bot_params["mouse_hunt"]["liven"][0]
 
     else:
         chats = bot_params["mouse_hunt_test"]["groups"]
         raschlenenka = bot_params["mouse_hunt_test"]["raschlenenka"][0]
         raschlenenka_till = bot_params["mouse_hunt_test"]["raschlenenka"][1]
-        liven = bot_params["mouse_hunt_test"]["liven"]
+        liven = bot_params["mouse_hunt_test"]["liven"][0]
     return chats, raschlenenka, raschlenenka_till, liven
 
 
-def start_mouse_shower():
-    N = 30
+def start_mouse_shower(bot, username, shower_chats):
+    N = 20
+    for chat in shower_chats:
+        chat_mouse_name = chats[chat]["names"][0]
+        bot.send_message(chat, f'Спасибо, {username}! '
+                               f'В этом чате включен дождик, ловите больше {chat_mouse_name}!')
     while N > 0:
-        for chat in random.choices(chats, k=2):
+        for chat in shower_chats:
             rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
-            mouse_appear(bot, chat, rnd_mouse)
-            time.sleep(30)
+            mouse_appear(bot, chat, rnd_mouse, fast=True)
         N -= 1
+    set_shower(False)
+
+    for chat in shower_chats:
+        chat_mouse_name = chats[chat]["names"][0]
+        bot.send_message(chat, f'Дождик из {chat_mouse_name} закончился! Можно порадоваться радуге и подумать о '
+                               f'покупке еще одного.')
 
 
 if __name__ == '__main__':
-    _, _, _, shower = get_hunt_params()
     while True:
         msk_zone = pytz.timezone('Europe/Moscow')
         now = datetime.now(tz=msk_zone)
+
+        time.sleep(randint(delay_min, delay_max))
         if 7 <= now.hour < 23:
+            _, _, _, shower = get_hunt_params()
             if shower:
-                start_mouse_shower()
                 set_shower(False)
             for chat in chats.keys():
                 rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
                 mouse_appear(bot, chat, rnd_mouse)
                 time.sleep(time_sleep)
-        time.sleep(randint(delay_min, delay_max))
 
     # with open('params.json', 'r') as file:
     #     bot_params = json.loads(file.read())

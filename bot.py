@@ -5,6 +5,7 @@ import sys
 import time
 from pprint import pprint
 
+import pytz
 from telebot import TeleBot, apihelper
 from datetime import datetime, timedelta
 from random import choice
@@ -277,8 +278,9 @@ def callback_buttons(call):
                 raschlenenka = False
                 mouse_catcher.set_raschlenenka(False)
                 for chat in chats.keys():
+                    chat_mouse_name = chats[chat]["names"][0]
                     bot.send_message(chat, f'Ну вот и все. Оплаченное время веселья закончилось, '
-                                           f'больше {mouse_name} рвать нельзя. Продлевать будете?')
+                                           f'больше {chat_mouse_name} рвать нельзя. Продлевать будете?')
 
             if (time.time() - mouse_busy) > 5:
                 if not raschlenenka:
@@ -340,6 +342,8 @@ def callback_buttons(call):
             chat_id = str(call.message.chat.id)
             user_scores = mouse_catcher.get_score(chat_id, call.from_user.id)
             if call.data.endswith('вкл'):
+                if raschlenenka:
+                    return
                 if user_scores >= raschlenenka_cost:
                     mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - raschlenenka_cost)
                     raschlenenka = True
@@ -364,16 +368,32 @@ def callback_buttons(call):
             mouse_catcher.set_raschlenenka(raschlenenka)
 
         if call.data == 'мышепад':
-            if user_scores >= shower_cost:
-                mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - shower_cost)
-                for chat in chats.keys():
+            msk_zone = pytz.timezone('Europe/Moscow')
+            now = datetime.now(tz=msk_zone)
+
+            if 7 <= now.hour < 23:
+                if liven:
+                    return
+                chat_id = str(call.message.chat.id)
+                user_scores = mouse_catcher.get_score(chat_id, call.from_user.id)
+                if user_scores >= shower_cost:
+                    mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, - shower_cost)
                     mouse_catcher.set_shower(True)
-                    chat_mouse_name = chats[chat]["names"][0]
-                    bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
-                                           f'В некоторых чатах включен дождик, ловите больше {chat_mouse_name}!')
+
+                    for chat in chats.keys():
+                        chat_mouse_name = chats[chat]["names"][0]
+                        bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
+                                               f'В некоторых чатах включен дождик, ловите больше {chat_mouse_name}!')
+
+                    shower_chats = random.sample(list(chats.keys()), k=2)
+                    mouse_catcher.start_mouse_shower(bot, username, shower_chats)
+
+                else:
+                    bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
+
+
             else:
-                bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
-            mouse_catcher.start_mouse_shower()
+                bot.send_message(call.message.chat.id, f'У нас ночь, {username} все спят, даже тучки!')
 
         if call.data.startswith('alert'):
             now = time.time()

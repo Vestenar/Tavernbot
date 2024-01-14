@@ -312,7 +312,7 @@ def xo_bot_move(state):
     return state
 
 
-def mouse_appear(bot, chat_id, rnd_mouse):
+def mouse_appear(bot, chat_id, rnd_mouse, fast=False):
     mouse_menu = types.InlineKeyboardMarkup()
     mouse_button = types.InlineKeyboardButton
     mouse_pic = chats[chat_id]['pics'][0]
@@ -323,7 +323,10 @@ def mouse_appear(bot, chat_id, rnd_mouse):
         mouse_button = types.InlineKeyboardButton(text=rat_pic, callback_data='rat_caught')
     mouse_menu.row(mouse_button)
     mouse_message = bot.send_message(chat_id, f'Ловите! Что это? Скорее ловите!', reply_markup=mouse_menu)
-    sleep(randint(15, 20))
+    if not fast:
+        sleep(randint(15, 20))
+    else:
+        sleep(5)
     try:
         bot.delete_message(chat_id, mouse_message.id)
     except:
