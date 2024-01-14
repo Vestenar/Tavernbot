@@ -222,7 +222,6 @@ class CounterJump:
         target_time = datetime(now.year, now.month, now.day, ((hh + 21) % 24), mm, ss, tzinfo=utc)
         time_delta = (target_time - now)
         self.timedelta = time_delta.seconds
-        print(self.timedelta)
         if refresh:
             return
         if self.pin_on:
@@ -301,7 +300,6 @@ class WarnUpdater:
     def get_group(self):
         with open('params.json', 'r') as file, open('params.json.bck', 'a') as bckfile:
             self.bot_params = json.loads(file.read())
-            print(self.bot_params, file=bckfile)
             warn_list = self.bot_params["personalwarning"]
             group_list = warn_list.setdefault(self.chat_id, {'30': [], '1': [], '2': [], '3': [], '5': []})
             return group_list
