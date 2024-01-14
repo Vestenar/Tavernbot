@@ -20,25 +20,28 @@ with open('params.json', 'r') as file:
     bot_params = json.loads(file.read())
     chats = bot_params["mouse_hunt"]["groups"]
     test_chats = bot_params["mouse_hunt_test"]["groups"]
-    # test_chats = {"-1001295840958": ""}
-    # test_chats = {"297112989": ""}
-    # test_chats.update({'297112989': {}, '297112989': {}})
 
 if settings.TEST_MODE:
     chats = test_chats
-    delay_min = 1
-    delay_max = 1
-    ratio = 8
+    delay_min = 3
+    delay_max = 5
+    ratio = 5
     time_sleep = 1
 
 
-def score_counter(chat_id, user_id, score):
+def score_counter(chat_id, user_id, score, reaction=None):
     chat_id, user_id = str(chat_id), str(user_id)
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())
         current_chat = scores["mice_caught"].setdefault(chat_id, {})
-        current_user_scores = current_chat.setdefault(user_id, 0)
-        scores["mice_caught"][chat_id][user_id] += score
+        current_user_scores = current_chat.setdefault(user_id, 0)[0]
+        scores["mice_caught"][chat_id][user_id][0] += score
+        cur_reaction = scores["mice_caught"][chat_id][user_id][1]
+        if cur_reaction is None:
+            scores["mice_caught"][chat_id][user_id][1] = reaction
+        else:
+            if reaction is not None:
+                scores["mice_caught"][chat_id][user_id][1] = min(cur_reaction, reaction)
     with open('mouse_scores.json', 'w') as file:
         file.write(json.dumps(scores))
     return current_user_scores + score
@@ -60,36 +63,36 @@ def get_score(chat_id, user_id):
             score_counter(chat_id, user_id, 0)
             return 0
         if str(user_id) in scores_list[str(chat_id)]:
-            return scores_list[str(chat_id)][str(user_id)]
+            return scores_list[str(chat_id)][str(user_id)][0]
         else:
             return 0
 
 
 def show_scores(chat_id):
+    chat_id = str(chat_id)
     with open('params.json', 'r') as file:
         bot_params = json.loads(file.read())
     if not settings.TEST_MODE:
         chats = bot_params["mouse_hunt"]["groups"]
     else:
         chats = bot_params["mouse_hunt_test"]["groups"]
-    chatid = str(chat_id)
-    mouse_name = chats[chatid]["names"][0]
-    rats_name = chats[chatid]["names"][1]
+    mouse_name = chats[chat_id]["names"][0]
+    rats_name = chats[chat_id]["names"][1]
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())["mice_caught"]
     with open('users.json') as file:
         user_list = json.loads(file.read())
     if str(chat_id) not in scores:
         return "В этом чате мышей не ловят"
-    scores = scores[str(chat_id)]
+    scores = scores[chat_id]
     rating = f'<code>Рейтинг охотников на {mouse_name} в чате:\n'
     sorted_scores = sorted(scores, key=scores.get, reverse=True)
-    total = sum([int(i) for i in scores.values() if int(i) > 0])
+    total = sum([int(i[0]) for i in scores.values() if int(i[0]) > 0])
     # total_rats = abs(sum([int(i) for i in scores.values() if int(i) < 0]))
 
     for id in sorted_scores:
         name = user_list[id]
-        points = scores[id]
+        points = scores[id][0]
         if points == 0:
             continue
         if points % 100 == 0 or points % 111 == 0:
@@ -181,8 +184,9 @@ if __name__ == '__main__':
 
     # with open('params.json', 'r') as file:
     #     bot_params = json.loads(file.read())
-    #     chats = bot_params["mouse_hunt"]["groups"]
+    #     # chats = bot_params["mouse_hunt_test"]["groups"]
     # for chat in chats:
+    #     # print(chat)
     #     print(show_scores(chat))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)
     # print(get_score(my_id, my_id))
