@@ -157,7 +157,8 @@ def reply(message):
         return get_movie(), 'text'
     if 'botname' in found_phrases and 'recepie' in found_phrases:
         from getinfo import get_recepie
-        return get_recepie(), 'img'
+        return 'Кто-то спер поваренную книгу! (На самом деле нет, когда-нибудь будет поправлено)', 'text'
+        # return get_recepie(), 'img'
     if 'botname' in found_phrases and 'valutes' in found_phrases:
         from getinfo import get_currencies
         return get_currencies(), 'text'
