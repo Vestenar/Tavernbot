@@ -1,3 +1,4 @@
+import logging
 import random
 from datetime import datetime
 import pytz
@@ -25,7 +26,7 @@ if settings.TEST_MODE:
     chats = test_chats
     delay_min = 3
     delay_max = 5
-    ratio = 5
+    ratio = 9
     time_sleep = 1
 
 
@@ -34,14 +35,14 @@ def score_counter(chat_id, user_id, score, reaction=None):
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())
         current_chat = scores["mice_caught"].setdefault(chat_id, {})
-        current_user_scores = current_chat.setdefault(user_id, 0)[0]
+        current_user_scores = current_chat.setdefault(user_id, [0, None])[0]
         scores["mice_caught"][chat_id][user_id][0] += score
         cur_reaction = scores["mice_caught"][chat_id][user_id][1]
         if cur_reaction is None:
             scores["mice_caught"][chat_id][user_id][1] = reaction
         else:
             if reaction is not None:
-                scores["mice_caught"][chat_id][user_id][1] = min(cur_reaction, reaction)
+                scores["mice_caught"][chat_id][user_id][1] = min(float(cur_reaction), reaction)
     with open('mouse_scores.json', 'w') as file:
         file.write(json.dumps(scores))
     return current_user_scores + score
@@ -88,7 +89,6 @@ def show_scores(chat_id):
     rating = f'<code>Рейтинг охотников на {mouse_name} в чате:\n'
     sorted_scores = sorted(scores, key=scores.get, reverse=True)
     total = sum([int(i[0]) for i in scores.values() if int(i[0]) > 0])
-    # total_rats = abs(sum([int(i) for i in scores.values() if int(i) < 0]))
 
     for id in sorted_scores:
         name = user_list[id]
@@ -104,7 +104,7 @@ def show_scores(chat_id):
             rating += f'{name:<15} {points:>4} {points/total:>6.2%}\n'
         else:
             rating += f'{name:<15} {points:>4}\n'
-    rating += f'{"—"*30}\nИТОГО: {total} {mouse_name}</code>'
+    rating += f'{"—"*26}\nИТОГО: {total} {mouse_name}</code>'
     return rating
 
 
@@ -131,6 +131,7 @@ def set_shower(state):
     with open('params.json', 'w') as file:
         file.write(json.dumps(bot_params))
 
+
 def get_hunt_params():
     with open('params.json', 'r') as file:
         bot_params = json.loads(file.read())
@@ -148,8 +149,9 @@ def get_hunt_params():
     return chats, raschlenenka, raschlenenka_till, liven
 
 
-def start_mouse_shower(bot, username, shower_chats):
+def start_mouse_shower(bot, username, chats):
     N = 20
+    shower_chats = random.sample(list(chats.keys()), k=2)
     for chat in shower_chats:
         chat_mouse_name = chats[chat]["names"][0]
         bot.send_message(chat, f'Спасибо, {username}! '
@@ -159,9 +161,10 @@ def start_mouse_shower(bot, username, shower_chats):
             rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
             mouse_appear(bot, chat, rnd_mouse, fast=True)
         N -= 1
+        time.sleep(4)
     set_shower(False)
 
-    for chat in shower_chats:
+    for chat in chats:
         chat_mouse_name = chats[chat]["names"][0]
         bot.send_message(chat, f'Дождик из {chat_mouse_name} закончился! Можно порадоваться радуге и подумать о '
                                f'покупке еще одного.')
@@ -172,7 +175,6 @@ if __name__ == '__main__':
         msk_zone = pytz.timezone('Europe/Moscow')
         now = datetime.now(tz=msk_zone)
 
-        time.sleep(randint(delay_min, delay_max))
         if 7 <= now.hour < 23:
             _, _, _, shower = get_hunt_params()
             if shower:
@@ -181,10 +183,11 @@ if __name__ == '__main__':
                 rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
                 mouse_appear(bot, chat, rnd_mouse)
                 time.sleep(time_sleep)
+        time.sleep(randint(delay_min, delay_max))
 
     # with open('params.json', 'r') as file:
     #     bot_params = json.loads(file.read())
-    #     # chats = bot_params["mouse_hunt_test"]["groups"]
+    #     chats = bot_params["mouse_hunt"]["groups"]
     # for chat in chats:
     #     # print(chat)
     #     print(show_scores(chat))
