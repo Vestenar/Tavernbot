@@ -1,6 +1,8 @@
 import logging
 import random
 from datetime import datetime
+from pprint import pprint
+
 import pytz
 from telebot import TeleBot
 import settings
@@ -78,33 +80,60 @@ def show_scores(chat_id):
     else:
         chats = bot_params["mouse_hunt_test"]["groups"]
     mouse_name = chats[chat_id]["names"][0]
-    rats_name = chats[chat_id]["names"][1]
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())["mice_caught"]
     with open('users.json') as file:
         user_list = json.loads(file.read())
     if str(chat_id) not in scores:
         return "В этом чате мышей не ловят"
-    scores = scores[chat_id]
+    chat_scores = scores[chat_id]
     rating = f'<code>Рейтинг охотников на {mouse_name} в чате:\n'
-    sorted_scores = sorted(scores, key=scores.get, reverse=True)
-    total = sum([int(i[0]) for i in scores.values() if int(i[0]) > 0])
+    sorted_scores = sorted(chat_scores, key=(lambda x: chat_scores[x][0]), reverse=True)
+    total = sum([int(i[0]) for i in chat_scores.values() if int(i[0]) > 0])
 
     for id in sorted_scores:
         name = user_list[id]
-        points = scores[id][0]
+        points = chat_scores[id][0]
         if points == 0:
             continue
         if points % 100 == 0 or points % 111 == 0:
             points = 0
-        if len(name) > 15:
+        n = 2
+        while len(name) > 14 and n:
             rating += name.split()[0] + '\n'
             name = ' '.join(name.split()[1:])
+            n -= 1
         if points > 0:
-            rating += f'{name:<15} {points:>4} {points/total:>6.2%}\n'
+            rating += f'{name:<14} {points:>4} {points/total:>6.2%}\n'
         else:
-            rating += f'{name:<15} {points:>4}\n'
-    rating += f'{"—"*26}\nИТОГО: {total} {mouse_name}</code>'
+            rating += f'{name:<14} {points:>4}\n'
+    rating += f'{"—"*26}\nИТОГО: {total} {mouse_name}\n'
+
+    filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] != None}
+    top_reaction = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[:3]
+    rating += '\nСамые быстрые лапки в чате:\n'
+    fastest_ever = {}
+
+    for id in top_reaction:
+        name = user_list[id]
+        reaction = chat_scores[id][1]
+        n = 2
+        while len(name) > 14 and n:
+            rating += name.split()[0] + '\n'
+            name = ' '.join(name.split()[1:])
+            n -= 1
+        rating += f'{name:<14} {reaction:>7} cек\n'
+
+    for chat_id in chats.keys():
+        chat_scores = scores[chat_id]
+        filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] != None}
+        id = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[0]
+        fastest_ever[chat_scores[id][1]] = user_list[id]
+
+    fastest_ever = sorted(fastest_ever.items())[0]
+    rating += '\nСамая быстрая лапка на свете:\n'
+    rating += f'{fastest_ever[1]} с результатом {fastest_ever[0]} сек.'
+    rating += '</code>'
     return rating
 
 
@@ -189,8 +218,8 @@ if __name__ == '__main__':
     #     bot_params = json.loads(file.read())
     #     chats = bot_params["mouse_hunt"]["groups"]
     # for chat in chats:
-    #     # print(chat)
     #     print(show_scores(chat))
+    #     (show_scores(chat))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)
     # print(get_score(my_id, my_id))
     # save_user(123, 'name')
