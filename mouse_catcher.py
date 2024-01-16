@@ -1,5 +1,6 @@
 import random
 from datetime import datetime
+
 import pytz
 from telebot import TeleBot
 import settings
@@ -20,25 +21,28 @@ with open('params.json', 'r') as file:
     bot_params = json.loads(file.read())
     chats = bot_params["mouse_hunt"]["groups"]
     test_chats = bot_params["mouse_hunt_test"]["groups"]
-    # test_chats = {"-1001295840958": ""}
-    # test_chats = {"297112989": ""}
-    # test_chats.update({'297112989': {}, '297112989': {}})
 
 if settings.TEST_MODE:
     chats = test_chats
-    delay_min = 1
-    delay_max = 1
-    ratio = 8
+    delay_min = 3
+    delay_max = 5
+    ratio = 9
     time_sleep = 1
 
 
-def score_counter(chat_id, user_id, score):
+def score_counter(chat_id, user_id, score, reaction=None):
     chat_id, user_id = str(chat_id), str(user_id)
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())
         current_chat = scores["mice_caught"].setdefault(chat_id, {})
-        current_user_scores = current_chat.setdefault(user_id, 0)
-        scores["mice_caught"][chat_id][user_id] += score
+        current_user_scores = current_chat.setdefault(user_id, [0, None])[0]
+        scores["mice_caught"][chat_id][user_id][0] += score
+        cur_reaction = scores["mice_caught"][chat_id][user_id][1]
+        if cur_reaction is None:
+            scores["mice_caught"][chat_id][user_id][1] = reaction
+        else:
+            if reaction is not None:
+                scores["mice_caught"][chat_id][user_id][1] = min(float(cur_reaction), reaction)
     with open('mouse_scores.json', 'w') as file:
         file.write(json.dumps(scores))
     return current_user_scores + score
@@ -60,48 +64,74 @@ def get_score(chat_id, user_id):
             score_counter(chat_id, user_id, 0)
             return 0
         if str(user_id) in scores_list[str(chat_id)]:
-            return scores_list[str(chat_id)][str(user_id)]
+            return scores_list[str(chat_id)][str(user_id)][0]
         else:
             return 0
 
 
 def show_scores(chat_id):
+    chat_id = str(chat_id)
     with open('params.json', 'r') as file:
         bot_params = json.loads(file.read())
     if not settings.TEST_MODE:
         chats = bot_params["mouse_hunt"]["groups"]
     else:
         chats = bot_params["mouse_hunt_test"]["groups"]
-    chatid = str(chat_id)
-    mouse_name = chats[chatid]["names"][0]
-    rats_name = chats[chatid]["names"][1]
+    mouse_name = chats[chat_id]["names"][0]
     with open('mouse_scores.json') as file:
         scores = json.loads(file.read())["mice_caught"]
     with open('users.json') as file:
         user_list = json.loads(file.read())
     if str(chat_id) not in scores:
         return "В этом чате мышей не ловят"
-    scores = scores[str(chat_id)]
+    chat_scores = scores[chat_id]
     rating = f'<code>Рейтинг охотников на {mouse_name} в чате:\n'
-    sorted_scores = sorted(scores, key=scores.get, reverse=True)
-    total = sum([int(i) for i in scores.values() if int(i) > 0])
-    # total_rats = abs(sum([int(i) for i in scores.values() if int(i) < 0]))
+    sorted_scores = sorted(chat_scores, key=(lambda x: chat_scores[x][0]), reverse=True)
+    total = sum([int(i[0]) for i in chat_scores.values() if int(i[0]) > 0])
 
     for id in sorted_scores:
         name = user_list[id]
-        points = scores[id]
+        points = chat_scores[id][0]
         if points == 0:
             continue
         if points % 100 == 0 or points % 111 == 0:
             points = 0
-        if len(name) > 15:
+        n = 2
+        while len(name) > 14 and n:
             rating += name.split()[0] + '\n'
             name = ' '.join(name.split()[1:])
+            n -= 1
         if points > 0:
-            rating += f'{name:<15} {points:>4} {points/total:>6.2%}\n'
+            rating += f'{name:<14} {points:>4} {points/total:>6.2%}\n'
         else:
-            rating += f'{name:<15} {points:>4}\n'
-    rating += f'{"—"*30}\nИТОГО: {total} {mouse_name}</code>'
+            rating += f'{name:<14} {points:>4}\n'
+    rating += f'{"—"*26}\nИТОГО: {total} {mouse_name}\n'
+
+    filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] != None}
+    top_reaction = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[:3]
+    rating += '\nСамые быстрые лапки в чате:\n'
+    fastest_ever = {}
+
+    for id in top_reaction:
+        name = user_list[id]
+        reaction = chat_scores[id][1]
+        n = 2
+        while len(name) > 14 and n:
+            rating += name.split()[0] + '\n'
+            name = ' '.join(name.split()[1:])
+            n -= 1
+        rating += f'{name:<14} {reaction:>7} cек\n'
+
+    for chat_id in chats.keys():
+        chat_scores = scores[chat_id]
+        filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] != None}
+        id = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[0]
+        fastest_ever[chat_scores[id][1]] = user_list[id]
+
+    fastest_ever = sorted(fastest_ever.items())[0]
+    rating += '\nСамая быстрая лапка на свете:\n'
+    rating += f'{fastest_ever[1]} с результатом {fastest_ever[0]} сек.'
+    rating += '</code>'
     return rating
 
 
@@ -128,6 +158,7 @@ def set_shower(state):
     with open('params.json', 'w') as file:
         file.write(json.dumps(bot_params))
 
+
 def get_hunt_params():
     with open('params.json', 'r') as file:
         bot_params = json.loads(file.read())
@@ -145,8 +176,9 @@ def get_hunt_params():
     return chats, raschlenenka, raschlenenka_till, liven
 
 
-def start_mouse_shower(bot, username, shower_chats):
+def start_mouse_shower(bot, username, chats):
     N = 20
+    shower_chats = random.sample(list(chats.keys()), k=2)
     for chat in shower_chats:
         chat_mouse_name = chats[chat]["names"][0]
         bot.send_message(chat, f'Спасибо, {username}! '
@@ -156,9 +188,10 @@ def start_mouse_shower(bot, username, shower_chats):
             rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
             mouse_appear(bot, chat, rnd_mouse, fast=True)
         N -= 1
+        time.sleep(4)
     set_shower(False)
 
-    for chat in shower_chats:
+    for chat in chats:
         chat_mouse_name = chats[chat]["names"][0]
         bot.send_message(chat, f'Дождик из {chat_mouse_name} закончился! Можно порадоваться радуге и подумать о '
                                f'покупке еще одного.')
@@ -169,7 +202,6 @@ if __name__ == '__main__':
         msk_zone = pytz.timezone('Europe/Moscow')
         now = datetime.now(tz=msk_zone)
 
-        time.sleep(randint(delay_min, delay_max))
         if 7 <= now.hour < 23:
             _, _, _, shower = get_hunt_params()
             if shower:
@@ -178,12 +210,14 @@ if __name__ == '__main__':
                 rnd_mouse = choice(['mouse'] * ratio + ['rat'] * (10 - ratio))
                 mouse_appear(bot, chat, rnd_mouse)
                 time.sleep(time_sleep)
+        time.sleep(randint(delay_min, delay_max))
 
     # with open('params.json', 'r') as file:
     #     bot_params = json.loads(file.read())
     #     chats = bot_params["mouse_hunt"]["groups"]
     # for chat in chats:
     #     print(show_scores(chat))
+    #     (show_scores(chat))
     # score_counter(settings.MY_ID, settings.MY_ID, 2)
     # print(get_score(my_id, my_id))
     # save_user(123, 'name')

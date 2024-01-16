@@ -290,10 +290,10 @@ def callback_buttons(call):
                 except:
                     pass
                 reaction = round(pressed - call.message.date, 2)
-                if reaction > 30:
+                if reaction < 30:
+                    score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1, reaction)
+                else:
                     reaction = '+0.1'
-
-                score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
                 if score % 111 == 0 or score % 100 == 0:
                     bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
                                                            f'популяции {mouse_name} полностью. Теперь на счету 0.')
@@ -385,8 +385,7 @@ def callback_buttons(call):
                         bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
                                                f'В некоторых чатах включен дождик, ловите больше {chat_mouse_name}!')
 
-                    shower_chats = random.sample(list(chats.keys()), k=2)
-                    mouse_catcher.start_mouse_shower(bot, username, shower_chats)
+                    mouse_catcher.start_mouse_shower(bot, username, chats)
 
                 else:
                     bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
