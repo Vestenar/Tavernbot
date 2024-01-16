@@ -1,7 +1,5 @@
-import logging
 import random
 from datetime import datetime
-from pprint import pprint
 
 import pytz
 from telebot import TeleBot
