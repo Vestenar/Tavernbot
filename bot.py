@@ -293,6 +293,7 @@ def callback_buttons(call):
                 if reaction < 30:
                     score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1, reaction)
                 else:
+                    score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)
                     reaction = '+0.1'
                 if score % 111 == 0 or score % 100 == 0:
                     bot.send_message(call.message.chat.id, f'УУУПС! Случившийся катаклизм избавил {username} от '
