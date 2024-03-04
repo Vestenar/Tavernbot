@@ -28,9 +28,9 @@ xo_message_to_delete, xo_turn = (None, None)
 mouse_busy = time.time()
 last_call = [0.0]
 
-raschlenenka_cost = 50
-raschlenenka_off_cost = 5
-shower_cost = 20
+raschlenenka_cost = 20
+raschlenenka_off_cost = 2
+shower_cost = 10
 
 bot = TeleBot(bot_token)
 
@@ -289,8 +289,8 @@ def callback_buttons(call):
                     bot.delete_message(call.message.chat.id, call.message.id)
                 except:
                     pass
-                reaction = round(pressed - call.message.date, 2)
-                if reaction < 30:
+                reaction = round(pressed - call.message.date, 3)
+                if reaction < 100:
                     score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1, reaction)
                 else:
                     score = mouse_catcher.score_counter(call.message.chat.id, call.from_user.id, 1)

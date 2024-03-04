@@ -141,9 +141,9 @@ def bar_menu(bot, call):
 
 def shop_menu(bot, message):
     shop = types.InlineKeyboardMarkup()
-    lot1 = types.InlineKeyboardButton(text='Включить разрывание (50 у.е.) ', callback_data='расчлененка_вкл')
-    lot2 = types.InlineKeyboardButton(text='Выключить разрывание (5 у.е.)', callback_data='расчлененка_откл')
-    lot3 = types.InlineKeyboardButton(text='Включить ливень (20 у.е.)', callback_data='мышепад')
+    lot1 = types.InlineKeyboardButton(text='Включить разрывание (20 у.е.) ', callback_data='расчлененка_вкл')
+    lot2 = types.InlineKeyboardButton(text='Выключить разрывание (2 у.е.)', callback_data='расчлененка_откл')
+    lot3 = types.InlineKeyboardButton(text='Включить ливень (10 у.е.)', callback_data='мышепад')
     menu_close = types.InlineKeyboardButton(text='Закрыть меню (Бесплатно)', callback_data='closemenu')
     shop.row(lot1)
     shop.row(lot2)

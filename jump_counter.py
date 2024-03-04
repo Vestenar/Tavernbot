@@ -148,6 +148,7 @@ class CounterJump:
                 warnlist = bot_params["personalwarning"][str(self.chat_id)][str(pers_time)]
             for chat in warnlist:
                 try:
+                    # TODO CHECK  ValueError: invalid literal for int() with base 10: ''
                     self.send(int(chat), 'Внимание, до {} в {:02d}:{:02d}:{:02d} '
                                          'осталось {}'.format(self.counter_name, *self.timedata, end[pers_time]))
                 except apihelper.ApiTelegramException:
