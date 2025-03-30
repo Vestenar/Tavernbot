@@ -1,13 +1,10 @@
-import json
 import logging
 import random
-import sys
 import time
-from pprint import pprint
 
 import pytz
 from telebot import TeleBot, apihelper
-from datetime import datetime, timedelta
+from datetime import datetime
 from random import choice
 import getinfo
 import replies
@@ -403,7 +400,7 @@ def callback_buttons(call):
             first_name = user.first_name if user.first_name else ''
             last_name = (' ' + user.last_name) if user.last_name else ''
             username = first_name + last_name
-
+            brevno_id, brevno_name = None, None
             if 'vest' in call.data:
                 brevno_name = 'vestenar'
                 brevno_id = settings.MY_ID
