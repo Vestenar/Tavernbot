@@ -1,7 +1,7 @@
 import requests
 from json import loads
 from random import randint
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 
 
 def get_currencies():
@@ -26,23 +26,36 @@ def get_currencies():
 
 
 def get_story():
-    url = 'https://lolstory.ru/story/'
-    antimat = 'Возможна ненормативная лексика. ' \
-              'Чтобы увидеть слово отключите цензор в низу страницы и обновите страницу. '
+    antimat = ["хуй", "бля", "ебал", "ебать", "траха"]
+    url = 'https://www.anekdot.ru/id/'
     MAXLEN = 1000
-    LAST_STORY = 53061
+    LAST_STORY = 1515749
     for _ in range(10):
-        number = randint(20000, LAST_STORY)
+        number = randint(10001, LAST_STORY)
         get_url = url + str(number)
+        print(get_url)
         resp = requests.get(get_url)
         if resp.status_code != 200:
-            return 'Устал я сегодня, да и память уже не та'
+            continue
+            #return 'Устал я сегодня, да и память уже не та'
 
         soup = BeautifulSoup(resp.content, 'lxml')
-        # story = soup.find('div', {'class': 'post-text'})
-        story = soup.select_one("span[itemprop*=articleBody]").contents[0]
+        if soup.find('video'):
+            continue
+
+        contents = soup.find('div', {'class': 'text'})
+        if contents.find('img'):
+            continue
+
+        contents = [el for el in contents.contents if type(el) is NavigableString]
+        story = '\n'.join(contents)
         if story and len(story) <= MAXLEN:
-            return story.strip().replace('\n\r', '\n').replace(antimat, '')
+            for mat in antimat:
+                if mat in story.lower():
+                    print("MAT ", story)
+                    continue
+            return story.strip()
+        resp = None
         soup = None
         story = None
     return 'Что-то в памяти всплывают только длинные истории, не хочется вас ими утруждать'
@@ -211,5 +224,5 @@ if __name__ == '__main__':
     # print(get_football('konf'))
     # print(get_football('champ'))
     # print(get_promo())
-    print(get_currencies())
-
+    # print(get_currencies())
+    print(get_story())
