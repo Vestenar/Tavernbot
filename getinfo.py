@@ -33,7 +33,6 @@ def get_story():
     for _ in range(10):
         number = randint(10001, LAST_STORY)
         get_url = url + str(number)
-        print(get_url)
         resp = requests.get(get_url)
         if resp.status_code != 200:
             continue
