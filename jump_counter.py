@@ -78,7 +78,6 @@ class CounterJump:
         menu_games.alert_menu(self.bot, self.call.message)
 
     def _clear_trash(self):
-        # TODO check if deleted messages unpins
         try:
             for i in self.messages_to_unpin:
                 time.sleep(1)
@@ -145,7 +144,10 @@ class CounterJump:
             end = {5: "5 минут", 3: "3 минуты", 2: "2 минуты", 1: "60 секунд", 30: "30 секунд"}
             with open('params.json') as file:
                 bot_params = json.loads(file.read())
-                warnlist = bot_params["personalwarning"][str(self.chat_id)][str(pers_time)]
+                if str(self.chat_id) in bot_params["personalwarning"]:
+                    warnlist = bot_params["personalwarning"][str(self.chat_id)][str(pers_time)]
+                else:
+                    warnlist = []
             for chat in warnlist:
                 try:
                     # TODO CHECK  ValueError: invalid literal for int() with base 10: ''
@@ -359,7 +361,7 @@ def autostart_timers(bot, chat_id, user_timers):
     default_timers = []
     if chat_id in [ZST_ID]:
         default_timers = ['лаб. данж,06,57,06', 'море,10,00,00', 'лаб. данж,12,01,12',
-                          'лаб. данж,17,01,17', 'море,20,00,00', 'лаб. данж,22,01,22', 'данж,22,10,22']
+                          'лаб. данж,17,01,17', 'море,20,00,00', 'лаб. данж,22,01,22', 'данж,23,10,23']
     timers = default_timers + user_timers
     chat = namedtuple('chat', ['id', 'type'])
     message = namedtuple('message', ['chat', 'message_id'])
