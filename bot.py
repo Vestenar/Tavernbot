@@ -364,9 +364,10 @@ def callback_buttons(call):
                         chat_mouse_name = chats[chat]["names"][0]
                         bot.send_message(chat, f'Внимание! В одном из чатов состоялась сделка с {username}! '
                                                f'Теперь {chat_mouse_name} снова рвать нельзя!')
+                        mouse_catcher.set_raschlenenka(raschlenenka)
                 else:
                     bot.send_message(call.message.chat.id, f'Это не банк, {username}, тут в долг не дают!')
-            mouse_catcher.set_raschlenenka(raschlenenka)
+
 
         if call.data == 'мышепад':
             msk_zone = pytz.timezone('Europe/Moscow')
