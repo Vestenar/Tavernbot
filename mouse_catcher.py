@@ -32,8 +32,8 @@ if settings.TEST_MODE:
 
 def score_counter(chat_id, user_id, score, reaction=None):
     chat_id, user_id = str(chat_id), str(user_id)
-    with open('mouse_scores.json') as file:
-        scores = json.loads(file.read())
+    with open('mouse_scores.json') as scores_file:
+        scores = json.loads(scores_file.read())
         current_chat = scores["mice_caught"].setdefault(chat_id, {})
         current_user_scores = current_chat.setdefault(user_id, [0, None])[0]
         scores["mice_caught"][chat_id][user_id][0] += score
@@ -43,23 +43,23 @@ def score_counter(chat_id, user_id, score, reaction=None):
         else:
             if reaction is not None:
                 scores["mice_caught"][chat_id][user_id][1] = min(float(cur_reaction), reaction)
-    with open('mouse_scores.json', 'w') as file:
-        file.write(json.dumps(scores))
+    with open('mouse_scores.json', 'w') as scores_file:
+        scores_file.write(json.dumps(scores, indent=4))
     return current_user_scores + score
 
 
 def save_user(user_id, username):
-    with open('users.json', 'r') as file:
-        user_list = json.loads(file.read())
+    with open('users.json', 'r') as users_file:
+        user_list = json.loads(users_file.read())
     if str(user_id) not in user_list:
         user_list[str(user_id)] = username
-        with open('users.json', 'w') as file:
-            file.write(json.dumps(user_list))
+        with open('users.json', 'w') as users_file:
+            users_file.write(json.dumps(user_list))
 
 
 def get_score(chat_id, user_id):
-    with open('mouse_scores.json') as file:
-        scores_list = json.loads(file.read())["mice_caught"]
+    with open('mouse_scores.json') as scores_file:
+        scores_list = json.loads(scores_file.read())["mice_caught"]
         if str(chat_id) not in scores_list:
             score_counter(chat_id, user_id, 0)
             return 0
@@ -71,17 +71,17 @@ def get_score(chat_id, user_id):
 
 def show_scores(chat_id):
     chat_id = str(chat_id)
-    with open('params.json', 'r') as file:
-        bot_params = json.loads(file.read())
+    with open('params.json', 'r') as scores_file:
+        bot_params = json.loads(scores_file.read())
     if not settings.TEST_MODE:
         chats = bot_params["mouse_hunt"]["groups"]
     else:
         chats = bot_params["mouse_hunt_test"]["groups"]
     mouse_name = chats[chat_id]["names"][0]
-    with open('mouse_scores.json') as file:
-        scores = json.loads(file.read())["mice_caught"]
-    with open('users.json') as file:
-        user_list = json.loads(file.read())
+    with open('mouse_scores.json') as scores_file:
+        scores = json.loads(scores_file.read())["mice_caught"]
+    with open('users.json') as scores_file:
+        user_list = json.loads(scores_file.read())
     if str(chat_id) not in scores:
         return "В этом чате мышей не ловят"
     chat_scores = scores[chat_id]
@@ -123,7 +123,6 @@ def show_scores(chat_id):
         rating += f'{name:<14} {reaction:>7} cек\n'
 
     for chat_id in chats.keys():
-        print(chat_id)
         chat_scores = scores[chat_id]
         filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] is not None}
         if not filtered_scores:
@@ -141,32 +140,32 @@ def show_scores(chat_id):
 
 
 def set_raschlenenka(raschlenenka):
-    with open('params.json', 'r') as file:
-        bot_params = json.loads(file.read())
+    with open('params.json', 'r') as params_file:
+        bot_params = json.loads(params_file.read())
         if not settings.TEST_MODE:
             bot_params["mouse_hunt"]["raschlenenka"][0] = raschlenenka
             bot_params["mouse_hunt"]["raschlenenka"][1] = time.time() + 24 * 3600.0 - 300
         else:
             bot_params["mouse_hunt_test"]["raschlenenka"][0] = raschlenenka
             bot_params["mouse_hunt_test"]["raschlenenka"][1] = time.time() + 60
-    with open('params.json', 'w') as file:
-        file.write(json.dumps(bot_params))
+    with open('params.json', 'w') as params_file:
+        params_file.write(json.dumps(bot_params, indent=4))
 
 
 def set_shower(state):
-    with open('params.json', 'r') as file:
-        bot_params = json.loads(file.read())
+    with open('params.json', 'r') as params_file:
+        bot_params = json.loads(params_file.read())
         if not settings.TEST_MODE:
             bot_params["mouse_hunt"]["liven"][0] = state
         else:
             bot_params["mouse_hunt_test"]["liven"][0] = state
-    with open('params.json', 'w') as file:
-        file.write(json.dumps(bot_params))
+    with open('params.json', 'w') as params_file:
+        params_file.write(json.dumps(bot_params, indent=4))
 
 
 def get_hunt_params():
-    with open('params.json', 'r') as file:
-        bot_params = json.loads(file.read())
+    with open('params.json', 'r') as params_file:
+        bot_params = json.loads(params_file.read())
     if not settings.TEST_MODE:
         chats = bot_params["mouse_hunt"]["groups"]
         raschlenenka = bot_params["mouse_hunt"]["raschlenenka"][0]
