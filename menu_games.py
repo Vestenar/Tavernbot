@@ -55,7 +55,7 @@ def jump_menu(bot, message):
                                                     callback_data='прыг,море,20,00,00')
     callback_button_22_01 = types.InlineKeyboardButton(text='22:01:22 лаб. данж',
                                                        callback_data='прыг,лаб. данж,22,01,22')
-    callback_button_22_10 = types.InlineKeyboardButton(text='23:10:23 охот. данж',
+    callback_button_22_10 = types.InlineKeyboardButton(text='23:10:23 опозданж',
                                                        callback_data='прыг,данж,23,10,23')
     # callback_button_22_rnd = types.InlineKeyboardButton(text='Случайное время в 22',
     #                                                     callback_data='прыг,данж,27,00,00')
