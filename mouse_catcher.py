@@ -89,9 +89,9 @@ def show_scores(chat_id):
     sorted_scores = sorted(chat_scores, key=(lambda x: chat_scores[x][0]), reverse=True)
     total = sum([int(i[0]) for i in chat_scores.values() if int(i[0]) > 0])
 
-    for id in sorted_scores:
-        name = user_list[id]
-        points = chat_scores[id][0]
+    for user_id in sorted_scores:
+        name = user_list[user_id]
+        points = chat_scores[user_id][0]
         if points == 0:
             continue
         if points % 100 == 0 or points % 111 == 0:
@@ -107,14 +107,14 @@ def show_scores(chat_id):
             rating += f'{name:<14} {points:>4}\n'
     rating += f'{"—"*26}\nИТОГО: {total} {mouse_name}\n'
 
-    filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] != None}
+    filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] is not None}
     top_reaction = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[:3]
     rating += '\nСамые быстрые лапки в чате:\n'
     fastest_ever = {}
 
-    for id in top_reaction:
-        name = user_list[id]
-        reaction = chat_scores[id][1]
+    for user_id in top_reaction:
+        name = user_list[user_id]
+        reaction = chat_scores[user_id][1]
         n = 2
         while len(name) > 14 and n:
             rating += name.split()[0] + '\n'
@@ -123,12 +123,17 @@ def show_scores(chat_id):
         rating += f'{name:<14} {reaction:>7} cек\n'
 
     for chat_id in chats.keys():
+        print(chat_id)
         chat_scores = scores[chat_id]
-        filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] != None}
-        id = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[0]
-        fastest_ever[chat_scores[id][1]] = user_list[id]
-
-    fastest_ever = sorted(fastest_ever.items())[0]
+        filtered_scores = {key: value for key, value in chat_scores.items() if chat_scores[key][1] is not None}
+        if not filtered_scores:
+            continue
+        user_id = sorted(filtered_scores, key=(lambda x: chat_scores[x][1]), reverse=False)[0]
+        fastest_ever[chat_scores[user_id][1]] = user_list[user_id]
+    if not fastest_ever:
+        fastest_ever = ("Еще не измерено", "Нет победителя")
+    else:
+        fastest_ever = sorted(fastest_ever.items())[0]
     rating += '\nСамая быстрая лапка на свете:\n'
     rating += f'{fastest_ever[1]} с результатом {fastest_ever[0]} сек.'
     rating += '</code>'
@@ -178,6 +183,7 @@ def get_hunt_params():
 
 def start_mouse_shower(bot, username, chats):
     N = 20
+    chats.pop("-1001704194166")     # FIXME ручное отключение дождикадля ОВВ
     shower_chats = random.sample(list(chats.keys()), k=2)
     for chat in shower_chats:
         chat_mouse_name = chats[chat]["names"][0]
